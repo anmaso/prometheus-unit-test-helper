@@ -12,10 +12,26 @@
     <div id="app" class="config-panel">
       <h2>Configuration</h2>
       good events ({{good_length}} data points)<input v-model="good" size="100" @keyup.enter="render"/>
-      <br/>
+      <div v-if="showSeriesValues" class="expanded-definition-mini">
+        <code>{{expandedGood}}</code>
+        <button @click="copyToClipboard(expandedGood)" class="copy-button" title="Copy good events to clipboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+      </div>
       <br/>
       bad events ({{bad_length}} data points)<input class="bad_events" v-model="bad" size="100" @keyup.enter="render"/>
-      <br/>
+      <div v-if="showSeriesValues" class="expanded-definition-mini">
+        <code class="bad_events">{{expandedBad}}</code>
+        <button @click="copyToClipboard(expandedBad)" class="copy-button" title="Copy bad events to clipboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+      </div>
       <br/>
       Alert formula:
       <select v-model="selectedFormula" @change="render()">
@@ -95,17 +111,6 @@
       </div>
     <!-- Series Values Section -->
     <div v-if="showSeriesValues" class="series-values-container">
-        <!-- Expanded Definitions Section -->
-        <div class="expanded-definitions">
-          <h4>Expanded Definitions:</h4>
-          <div class="definition-item">
-            <strong>Good events:</strong> <code>{{expandedGood}}</code>
-          </div>
-          <div class="definition-item">
-            <strong>Bad events:</strong> <code class="bad_events">{{expandedBad}}</code>
-          </div>
-        </div>
-        
         <div class="series-data">
           <h4>Step Values:</h4>
           <div class="series-item">
@@ -693,6 +698,22 @@
           showHelpModal.value = !showHelpModal.value;
         };
 
+        const copyToClipboard = async (text) => {
+          try {
+            await navigator.clipboard.writeText(text);
+            // Optional: Add visual feedback here if desired
+          } catch (err) {
+            console.error('Failed to copy text: ', err);
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+          }
+        };
+
         if (initialTests && runUnitTests){
           runUnitTests();
         }
@@ -719,6 +740,7 @@
           showSeriesValues, // Expose for v-model on checkbox
           expandedBad, // Expose expanded bad definition
           expandedGood, // Expose expanded good definition
+          copyToClipboard, // Expose for copy functionality
         };
       },
     });
@@ -922,44 +944,64 @@
       width: 4rem;
     }
     
-    /* Expanded Definitions Styles */
-    .expanded-definitions {
-      background-color: #282A2E;
-      padding: 15px;
-      border-radius: 4px;
-      border: 1px solid #3E4147;
-      margin-bottom: 15px;
-    }
-    
-    .expanded-definitions h4 {
-      color: #D8D9DA;
-      margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 14px;
-      border-bottom: 1px solid #3A3D42;
-      padding-bottom: 5px;
-    }
-    
-    .definition-item {
-      margin-bottom: 8px;
-      font-family: "Courier", "Monaco", monospace;
-      font-size: 12px;
-    }
-    
-    .definition-item strong {
-      color: #B4B7C0;
-      margin-right: 8px;
-    }
-    
-    .definition-item code {
-      background-color: #1F2126;
-      padding: 2px 6px;
-      border-radius: 3px;
-      border: 1px solid #3E4147;
-    }
+
 
     .bad_events {
       color: #ed7591;
+    }
+
+    .copy-button {
+      background: none;
+      border: none;
+      color: #B4B7C0;
+      cursor: pointer;
+      padding: 4px;
+      margin-left: 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      min-height: 24px;
+    }
+
+    .copy-button:hover {
+      background-color: #3E4147;
+      color: #D8D9DA;
+      transform: scale(1.05);
+    }
+
+    .copy-button:active {
+      transform: scale(0.95);
+    }
+
+    .expanded-definition-mini {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+      font-family: "Courier", "Monaco", monospace;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .expanded-definition-mini code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+      flex: 1;
+      word-break: break-all;
+    }
+
+    .definition-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-family: "Courier", "Monaco", monospace;
+      font-size: 12px;
     }
   </style>
 </html>
