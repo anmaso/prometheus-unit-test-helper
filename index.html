@@ -64,6 +64,9 @@
       <br/> <!-- Added line break for better spacing -->
       <input type="checkbox" id="showSeriesValuesCheckbox" v-model="showSeriesValues" />
       <label for="showSeriesValuesCheckbox" style="cursor: pointer;">Show series values</label>
+      <br/> <!-- Added line break for better spacing -->
+      <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" @change="updateTimeFormatSetting" />
+      <label for="showTimeFormatCheckbox" style="cursor: pointer;">Show time format</label>
 
       <!-- Help Modal -->
       <div v-if="showHelpModal" class="modal-overlay" @click.self="toggleHelpModal()">
@@ -270,6 +273,21 @@
       return values;
     },
 
+    // Convert minutes to days, hours, minutes string representation
+    minutesToTimeString: (minutes) => {
+      if (minutes < 0) return '0m';
+      
+      const days = Math.floor(minutes / 1440); // 24 * 60 = 1440 minutes per day
+      const hours = Math.floor((minutes % 1440) / 60);
+      const mins = minutes % 60;
+      
+      let result = '';
+      if (days > 0) result += days + 'd';
+      if (hours > 0) result += hours + 'h';
+      if (mins > 0 || result === '') result += mins + 'm';
+      
+      return result;
+    },
 
     indexOfValueOver: (threshold, series1, series2) => {
       let overThreshold = -1;
@@ -444,100 +462,116 @@
       },
     };
 
-    const config = {
-      type: "line",
-      data: {
-        labels: [],
-        datasets: [],
-      },
-      plugins: [highlightPlugin],
-      options: {
-        datasets: {
-          line:{
-          borderWidth: 1,
-          pointRadius: 1
+    const getChartConfig = function(vueFuncts){
 
-          },
+      return {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [],
         },
-        responsive: true,
-        plugins: {
-          highlight: { enabled: true }, // Configure the highlight plugin to be enabled by default
-          zoom: {
+        plugins: [highlightPlugin],
+        options: {
+          datasets: {
+            line:{
+            borderWidth: 1,
+            pointRadius: 1
+
+            },
+          },
+          responsive: true,
+          plugins: {
+            highlight: { enabled: true }, // Configure the highlight plugin to be enabled by default
             zoom: {
-              wheel: {
-                enabled: false,
+              zoom: {
+                wheel: {
+                  enabled: false,
+                },
+                pinch: {
+                  enabled: false,
+                },
+                mode: "xy",
               },
-              pinch: {
-                enabled: false,
+              pan: {
+                enabled: true,
+                // mode: "x",
+                // modifierKey: "shift",
               },
-              mode: "xy",
             },
-            pan: {
-              enabled: true,
-              // mode: "x",
-              // modifierKey: "shift",
+            legend: {
+              labels: {
+                color: '#D8D9DA' // Grafana-like text color for legend
+              }
             },
-          },
-          legend: {
-            labels: {
-              color: '#D8D9DA' // Grafana-like text color for legend
-            }
-          }
-        },
-        interaction: {
-          //  intersect: true,
-        },
-        scales: { // Corrected from xscales to scales
-          x: {
-            display: true,
-            title: {
-              display: true,
-            },
-            ticks: {
-              display: true,
-              maxTicksLimit: 100, // Adjust this number as needed
-              color: '#B4B7C0', // Grafana-like tick color
-            },
-            grid: {
-              color: '#3A3D42' // Grafana-like grid color
-            },
-          },
-          y: {
-            display: true,
-            title: {
-              display: true,
-              text: "Value",
-              color: '#D8D9DA',
-            },
-            suggestedMin: 0,
-            ticks: {
-              color: '#B4B7C0',
-            },
-            grid: {
-              color: '#3A3D42'
+            tooltip: {
+              callbacks: {
+                title: function(context) {
+                  const dataIndex = context[0].dataIndex;
+                  return vueFuncts.showTimeFormat.value ? 
+                    `Time: ${fn.minutesToTimeString(dataIndex)} (${dataIndex})` : 
+                    `Step: ${dataIndex}`;
+                }
+              }
             }
           },
-          y_errors: {
-            position: 'right', // Common for a second y-axis
-            display: true,
-            title: {
+          interaction: {
+            intersect: false,
+          },
+          scales: { // Corrected from xscales to scales
+            x: {
               display: true,
-              text: "Error Related Value",
-              color: '#D8D9DA',
+              title: {
+                display: true,
+              },
+              ticks: {
+                display: true,
+                maxTicksLimit: 100, // Adjust this number as needed
+                color: '#B4B7C0', // Grafana-like tick color
+                callback: function(value) {
+                  return fn.minutesToTimeString(value);
+                }
+              },
+              grid: {
+                color: '#3A3D42' // Grafana-like grid color
+              },
             },
-            suggestedMin: 0,
-            suggestedMax: 1,
-            ticks: {
-              color: '#B4B7C0',
+            y: {
+              display: true,
+              title: {
+                display: true,
+                text: "Value",
+                color: '#D8D9DA',
+              },
+              suggestedMin: 0,
+              ticks: {
+                color: '#B4B7C0',
+              },
+              grid: {
+                color: '#3A3D42'
+              }
             },
-            grid: {
-              drawOnChartArea: false, // Common for secondary axis to not clutter
-              color: '#3A3D42'
-            }
+            y_errors: {
+              position: 'right', // Common for a second y-axis
+              display: true,
+              title: {
+                display: true,
+                text: "Error Related Value",
+                color: '#D8D9DA',
+              },
+              suggestedMin: 0,
+              suggestedMax: 1,
+              ticks: {
+                color: '#B4B7C0',
+              },
+              grid: {
+                drawOnChartArea: false, // Common for secondary axis to not clutter
+                color: '#3A3D42'
+              }
+            },
           },
         },
-      },
-    };
+      };
+    }
 
     const { createApp } = Vue;
     const app = createApp({
@@ -562,7 +596,8 @@
           SELECTED_FORMULA: 'slo_helper_selected_formula_v1',
           DEBOUNCE_ENABLED: 'slo_helper_debounce_enabled_v1', 
           DEBOUNCE_TIME: 'slo_helper_debounce_time_v1',
-          SHOW_SERIES_VALUES: 'slo_helper_show_series_values_v1'
+          SHOW_SERIES_VALUES: 'slo_helper_show_series_values_v1',
+          SHOW_TIME_FORMAT: 'slo_helper_show_time_format_v1'
         };
 
 
@@ -577,6 +612,7 @@
         const initialDebounceEnabled = localStorage.getItem(LS_KEYS.DEBOUNCE_ENABLED); // Use the new key
         const initialDebounceTime = localStorage.getItem(LS_KEYS.DEBOUNCE_TIME) || 0;
         const initialShowSeriesValues = localStorage.getItem(LS_KEYS.SHOW_SERIES_VALUES);
+        const initialShowTimeFormat = localStorage.getItem(LS_KEYS.SHOW_TIME_FORMAT);
         const initialTests = document.location.toString().indexOf('test=true')>0;
 
         let bad         = Vue.ref(initialBad);
@@ -594,14 +630,16 @@
         let selectedFormula  = Vue.ref(initialSelectedFormula);
         let showHelpModal    = Vue.ref(false);
         let showSeriesValues = Vue.ref(initialShowSeriesValues !== null ? JSON.parse(initialShowSeriesValues) : false);
+        let showTimeFormat   = Vue.ref(initialShowTimeFormat !== null ? JSON.parse(initialShowTimeFormat) : true);
         let badSeriesData    = Vue.ref([]);
         let goodSeriesData   = Vue.ref([]);
         let expandedBad      = Vue.ref('');
         let expandedGood     = Vue.ref('');
 
 
+        let config = getChartConfig({showTimeFormat})
 
-        const updateChart = ()=>{
+        const updateChart = function(){
           const def_bad = fn.serieDefFromString(bad.value);
           const def_good = fn.serieDefFromString(good.value);
           const serie_bad =fn.makeSerie(def_bad);
@@ -637,6 +675,7 @@
             hiddenMap[dataset.label] = !myChart.isDatasetVisible(index);
           });
 
+
           config.data = {
             labels : new Array(max).fill(0).map((_, i) => i.toString()),
             datasets : [
@@ -671,6 +710,18 @@
           }
         };
 
+        const updateTimeFormatSetting = () => {
+          if (myChart && myChart.options && myChart.options.scales && myChart.options.scales.x) {
+            myChart.options.scales.x.ticks.callback = showTimeFormat.value ? 
+              function(value) { return fn.minutesToTimeString(value); } : 
+              function(value) { return value; };
+            myChart.update();
+          }
+        };
+        // Set initial time format setting
+        updateTimeFormatSetting();
+
+
         // Watchers to save to localStorage
         Vue.watch(bad, (newValue) => { localStorage.setItem(LS_KEYS.BAD, newValue); });
         Vue.watch(good, (newValue) => { localStorage.setItem(LS_KEYS.GOOD, newValue); });
@@ -691,6 +742,10 @@
 
         Vue.watch(showSeriesValues, (newValue) => { 
           localStorage.setItem(LS_KEYS.SHOW_SERIES_VALUES, newValue); 
+        });
+
+        Vue.watch(showTimeFormat, (newValue) => { 
+          localStorage.setItem(LS_KEYS.SHOW_TIME_FORMAT, newValue); 
         });
 
 
@@ -734,10 +789,12 @@
           debounceEnabled,
           debounceTime,
           updateHighlightSetting, // Expose to template for @change
+          updateTimeFormatSetting, // Expose to template for @change
           selectedFormula, // Expose for v-model on select
           showHelpModal, // Expose for modal visibility
           toggleHelpModal, // Expose for modal toggle
           showSeriesValues, // Expose for v-model on checkbox
+          showTimeFormat, // Expose for v-model on checkbox
           expandedBad, // Expose expanded bad definition
           expandedGood, // Expose expanded good definition
           copyToClipboard, // Expose for copy functionality
@@ -955,7 +1012,7 @@
       border: none;
       color: #B4B7C0;
       cursor: pointer;
-      padding: 4px;
+      padding: 0px;
       margin-left: 8px;
       border-radius: 4px;
       transition: all 0.2s ease;
@@ -980,8 +1037,6 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-top: 4px;
-      margin-bottom: 8px;
       font-family: "Courier", "Monaco", monospace;
       font-size: 11px;
       opacity: 0.8;
