@@ -14,7 +14,7 @@
       good events ({{good_length}} data points)<input v-model="good" size="100" @keyup.enter="render"/>
       <br/>
       <br/>
-      bad events ({{bad_length}} data points)<input v-model="bad" size="100" @keyup.enter="render"/>
+      bad events ({{bad_length}} data points)<input class="bad_events" v-model="bad" size="100" @keyup.enter="render"/>
       <br/>
       <br/>
       Alert formula:
@@ -95,9 +95,25 @@
       </div>
     <!-- Series Values Section -->
     <div v-if="showSeriesValues" class="series-values-container">
+        <!-- Expanded Definitions Section -->
+        <div class="expanded-definitions">
+          <h4>Expanded Definitions:</h4>
+          <div class="definition-item">
+            <strong>Good events:</strong> <code>{{expandedGood}}</code>
+          </div>
+          <div class="definition-item">
+            <strong>Bad events:</strong> <code class="bad_events">{{expandedBad}}</code>
+          </div>
+        </div>
+        
         <div class="series-data">
+          <h4>Step Values:</h4>
+          <div class="series-item">
+            <span class="index">step</span> <span class="value">good</span><span class="value bad_events">bad</span><span class="value">rate good</span></span><span class="value bad_events">rate bad</span>
+          </div>
           <div v-for="(value, index) in step_values.good_values" :key="'good-' + index" class="series-item">
-            <span class="index">{{index}}:</span> <span class="value">{{value}}</span><span class="value">{{step_values.bad_values[index]}}</span>
+            <span class="index">{{index}}:</span> <span class="value">{{value}}</span><span class="value bad_events">{{step_values.bad_values[index]}}</span><span class="value">{{step_values.rate_good[index]}}</span></span><span class="value bad_events">{{step_values.rate_bad[index]}}</span>
+
           </div>
         </div>
 
@@ -178,14 +194,23 @@
     makeSerie: (spec) => {
       let values = [];
       spec.forEach((s) => {
+        let len = values.length;
         if (s.initial == "#") {
-          if (values.length==0){
+          if (len==0){
             values = [0];
           }else{
             values.push(values[values.length - 1] + s.increment);
           }
         } else {
-          values.push(s.initial);
+          if (s.initial === '_') {
+            // Handle special underscore values directly
+            values.push(s.initial);
+          } else {
+            values.push( (len?values[values.length - 1]:0) + s.initial);
+          }
+        }
+        if (len>0 && values[len] < values[len-1]){
+          values[len]=values[len-1]+values[len]
         }
         for (i = 0; i < s.steps; i++) {
           if (s.increment=='_'){
@@ -300,6 +325,39 @@
       }
 
       return results;
+    },
+
+    expandSeriesDefinition: (definition) => {
+      const spec = fn.serieDefFromString(definition);
+      const expandedParts = [];
+      let lastValue = 0;
+
+      spec.forEach((s) => {
+        let initialValue;
+        if (s.initial === "#") {
+          initialValue = lastValue;
+        } else if (typeof s.initial === 'number') {
+          initialValue = s.initial;
+        } else {
+          // For special values like '_', keep them as is
+          expandedParts.push(s.initial);
+          return;
+        }
+
+        if (s.steps === 0) {
+          // Single value
+          expandedParts.push(initialValue.toString());
+          lastValue = initialValue;
+        } else {
+          // Value with increment and steps
+          const operator = s.increment >= 0 ? '+' : '';
+          expandedParts.push(`${initialValue}${operator}${s.increment}x${s.steps}`);
+          // Calculate the last value for this segment
+          lastValue = initialValue + (s.increment * s.steps);
+        }
+      });
+
+      return expandedParts.join(' ');
     },
 
   };
@@ -533,6 +591,8 @@
         let showSeriesValues = Vue.ref(initialShowSeriesValues !== null ? JSON.parse(initialShowSeriesValues) : false);
         let badSeriesData    = Vue.ref([]);
         let goodSeriesData   = Vue.ref([]);
+        let expandedBad      = Vue.ref('');
+        let expandedGood     = Vue.ref('');
 
 
 
@@ -540,12 +600,17 @@
           const def_bad = fn.serieDefFromString(bad.value);
           const def_good = fn.serieDefFromString(good.value);
           const serie_bad =fn.makeSerie(def_bad);
+        console.log("serie_bad", serie_bad)
           const serie_good =fn.makeSerie(def_good);
           bad_length.value = serie_bad.length;
           good_length.value = serie_good.length;
           const rate_bad = fn.rateOverN(serie_bad, 1)
           const rate_good = fn.rateOverN(serie_good, 1)
-          step_values.value = {bad_values: serie_bad, good_values: serie_good};
+          step_values.value = {bad_values: serie_bad, good_values: serie_good, rate_bad, rate_good};
+          
+          // Calculate expanded definitions
+          expandedBad.value = fn.expandSeriesDefinition(bad.value);
+          expandedGood.value = fn.expandSeriesDefinition(good.value);
 
           let alert1, alert2;
           if (selectedFormula.value === 'countOverN') {
@@ -652,6 +717,8 @@
           showHelpModal, // Expose for modal visibility
           toggleHelpModal, // Expose for modal toggle
           showSeriesValues, // Expose for v-model on checkbox
+          expandedBad, // Expose expanded bad definition
+          expandedGood, // Expose expanded good definition
         };
       },
     });
@@ -851,8 +918,48 @@
     }
     
     .series-item .value {
-      color: #D8D9DA;
       margin-left: 10px;
+      width: 4rem;
+    }
+    
+    /* Expanded Definitions Styles */
+    .expanded-definitions {
+      background-color: #282A2E;
+      padding: 15px;
+      border-radius: 4px;
+      border: 1px solid #3E4147;
+      margin-bottom: 15px;
+    }
+    
+    .expanded-definitions h4 {
+      color: #D8D9DA;
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 14px;
+      border-bottom: 1px solid #3A3D42;
+      padding-bottom: 5px;
+    }
+    
+    .definition-item {
+      margin-bottom: 8px;
+      font-family: "Courier", "Monaco", monospace;
+      font-size: 12px;
+    }
+    
+    .definition-item strong {
+      color: #B4B7C0;
+      margin-right: 8px;
+    }
+    
+    .definition-item code {
+      background-color: #1F2126;
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid #3E4147;
+    }
+
+    .bad_events {
+      color: #ed7591;
     }
   </style>
 </html>
