@@ -10,7 +10,7 @@
 
   <div class="main-container">
     <div id="app" class="config-panel">
-      <h2>Configuration</h2>
+      <h2>Test Configuration</h2>
       good events ({{good_length}} data points)<input v-model="good" size="100" @keyup.enter="render"/>
       <div v-if="showSeriesValues" class="expanded-definition-mini">
         <code>{{expandedGood}}</code>
@@ -58,8 +58,8 @@
       <label for="highlightToggleCheckbox" style="cursor: pointer;">Highlight alert</label>
       <br/> <!-- Added line break for better spacing -->
       <input type="checkbox" id="debounceToggleCheckbox" v-model="debounceEnabled" @change="updateHighlightSetting" />
-      <label for="debounceToggleCheckbox" style="cursor: pointer;">Debounce alert </label>
-      <label for="debounceTimeInput" style="margin-left: 10px;"> window</label>
+      <label for="debounceToggleCheckbox" style="cursor: pointer;">Debounce alert</label>
+      <label for="debounceTimeInput" style="margin-left: 10px;">window </label>
       <input id="debounceTimeInput" v-model="debounceTime" size="3" min="0" @change="updateHighlightSetting" />
       <br/> <!-- Added line break for better spacing -->
       <input type="checkbox" id="showSeriesValuesCheckbox" v-model="showSeriesValues" />
