@@ -8,10 +8,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
   <script src="tests.js"></script>
 
-  <div class="main-container">
-    <div id="app" class="config-panel">
+  <div class="main-container" id="app">
+    <div class="config-panel">
       <h2>Test Configuration</h2>
-      good events ({{good_length}} data points)<input v-model="good" size="100" @keyup.enter="render"/>
+      good events ({{good_length}} data points)<input v-model="good" size="100" />
       <div v-if="showSeriesValues" class="expanded-definition-mini">
         <code>{{expandedGood}}</code>
         <button @click="copyToClipboard(expandedGood)" class="copy-button" title="Copy good events to clipboard">
@@ -22,7 +22,7 @@
         </button>
       </div>
       <br/>
-      bad events ({{bad_length}} data points)<input class="bad_events" v-model="bad" size="100" @keyup.enter="render"/>
+      bad events ({{bad_length}} data points)<input class="bad_events" v-model="bad" size="100" />
       <div v-if="showSeriesValues" class="expanded-definition-mini">
         <code class="bad_events">{{expandedBad}}</code>
         <button @click="copyToClipboard(expandedBad)" class="copy-button" title="Copy bad events to clipboard">
@@ -34,7 +34,7 @@
       </div>
       <br/>
       Alert formula:
-      <select v-model="selectedFormula" @change="render()">
+      <select v-model="selectedFormula">
         <option value="proportionRateOverN">Proportion Rate over N</option>
         <option value="countOverN">Count over N</option>
       </select>
@@ -50,22 +50,20 @@
       <input v-model="long" size="5" />
       threshold <input v-model="threshold2" size="6" />
       <br/> <!-- Added line break for better spacing -->
-      <button @click="render()">render</button>
-      &nbsp; &nbsp;
       <button @click="toggleHelpModal()">Help</button>
       <br/> <!-- Added line break for better spacing -->
-      <input type="checkbox" id="highlightToggleCheckbox" v-model="highlightEnabled" @change="updateHighlightSetting" />
+      <input type="checkbox" id="highlightToggleCheckbox" v-model="highlightEnabled" />
       <label for="highlightToggleCheckbox" style="cursor: pointer;">Highlight alert</label>
       <br/> <!-- Added line break for better spacing -->
-      <input type="checkbox" id="debounceToggleCheckbox" v-model="debounceEnabled" @change="updateHighlightSetting" />
+      <input type="checkbox" id="debounceToggleCheckbox" v-model="debounceEnabled" />
       <label for="debounceToggleCheckbox" style="cursor: pointer;">Debounce alert</label>
       <label for="debounceTimeInput" style="margin-left: 10px;">window </label>
-      <input id="debounceTimeInput" v-model="debounceTime" size="3" min="0" @change="updateHighlightSetting" />
+      <input id="debounceTimeInput" v-model="debounceTime" size="3" min="0" />
       <br/> <!-- Added line break for better spacing -->
       <input type="checkbox" id="showSeriesValuesCheckbox" v-model="showSeriesValues" />
       <label for="showSeriesValuesCheckbox" style="cursor: pointer;">Show series values</label>
       <br/> <!-- Added line break for better spacing -->
-      <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" @change="updateTimeFormatSetting" />
+      <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" />
       <label for="showTimeFormatCheckbox" style="cursor: pointer;">Show time format</label>
 
       <!-- Help Modal -->
@@ -112,6 +110,24 @@
           <p>The chart displays various series including the raw bad/good event counts (hidden by default), their rates, the calculated alert proportions, and the defined thresholds.</p>
         </div>
       </div>
+    </div>
+    <div class="chart-container">
+      <ChartComponent
+        :alert1="chartData.alert1"
+        :alert2="chartData.alert2"
+        :threshold1="chartData.threshold1"
+        :threshold2="chartData.threshold2"
+        :bad="chartData.bad"
+        :good="chartData.good"
+        :rate_bad="chartData.rate_bad"
+        :rate_good="chartData.rate_good"
+        :labels="chartData.labels"
+        :highlight-enabled="highlightEnabled"
+        :debounce-enabled="debounceEnabled"
+        :debounce-time="debounceTime"
+        :show-time-format="showTimeFormat"
+      />
+    </div>
     <!-- Series Values Section -->
     <div v-if="showSeriesValues" class="series-values-container">
         <div class="series-data">
@@ -126,10 +142,6 @@
         </div>
 
     </div><!--- end of series values section -->
-    </div>
-    <div class="chart-container">
-      <canvas id="chart"></canvas>
-    </div>
   </div>
   
   <script>
@@ -384,6 +396,229 @@
     },
 
   };
+  
+  // ChartComponent definition
+  const ChartComponent = {
+    props: {
+      alert1: { type: Array, required: true },
+      alert2: { type: Array, required: true },
+      threshold1: { type: Array, required: true },
+      threshold2: { type: Array, required: true },
+      bad: { type: Array, required: true },
+      good: { type: Array, required: true },
+      rate_bad: { type: Array, required: true },
+      rate_good: { type: Array, required: true },
+      labels: { type: Array, required: true },
+      highlightEnabled: { type: Boolean, required: true },
+      debounceEnabled: { type: Boolean, required: true },
+      debounceTime: { type: [Number, String], required: true },
+      showTimeFormat: { type: Boolean, default: false }
+    },
+    template: `<canvas ref="chartCanvas" style="width: 100%; height: 100%;"></canvas>`,
+    mounted() {
+      
+      this.$nextTick(() => {
+        this.renderChart();
+      });
+    },
+    watch: {
+      alert1: 'renderChart',
+      alert2: 'renderChart',
+      threshold1: 'renderChart',
+      threshold2: 'renderChart',
+      bad: 'renderChart',
+      good: 'renderChart',
+      rate_bad: 'renderChart',
+      rate_good: 'renderChart',
+      labels: 'renderChart',
+      highlightEnabled: 'renderChart',
+      debounceEnabled: 'renderChart',
+      debounceTime: 'renderChart',
+      showTimeFormat: {
+        handler(newVal, oldVal) {
+          this.updateTimeFormat();
+        },
+        immediate: true
+      },
+      highlightEnabled: {
+        handler(newVal, oldVal) {
+          if (this._chart) {
+            this._chart.options.plugins.highlight.enabled = newVal;
+            this._chart.update('none');
+          }
+        },
+        immediate: true
+      },
+      debounceTime: {
+        handler(newVal, oldVal) {
+          if (this._chart) {
+            this._chart.debounceTime = newVal;
+            this._chart.update('none');
+          }
+        },
+        immediate: true
+      },
+      debounceEnabled: {
+        handler(newVal, oldVal) {
+          if (this._chart) {
+            this._chart.debounceEnabled = newVal;
+            this._chart.update('none');
+          }
+        },
+        immediate: true
+      },
+    },
+
+    computed: {
+      showTimeFormatValue() {
+        return this.showTimeFormat;
+      }
+    },
+    methods: {
+      renderChart() {
+        
+        if (!this.labels || !this.alert1 || !this.alert2) {
+          console.log('Data not ready yet');
+          return;
+        }
+        
+        if (this._chart) {
+          this._chart.destroy();
+        }
+        
+        const canvas = this.$refs.chartCanvas;
+        if (!canvas) {
+          console.error('Canvas not found');
+          return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          console.error('Could not get 2D context');
+          return;
+        }
+        
+        const config = {
+          type: 'line',
+          data: {
+            labels: this.labels,
+            datasets: [
+              {label:'alert1', data:this.alert1, backgroundColor:'#73bf79', borderColor:'#73bf79'},
+              {label:'alert2', data:this.alert2, backgroundColor:'#f2cc0c', borderColor:'#f2cc0c'},
+              {label:'threshold1', data:this.threshold1, backgroundColor:'#6495ed', borderColor:'#6495ed', pointRadius:0, borderDash:[10, 10]},
+              {label:'threshold2', data:this.threshold2, backgroundColor:'#ed6495', borderColor:'#ed6495', pointRadius:0, borderDash:[10, 10]},
+              {label:'bad', data:this.bad, backgroundColor:'#ffaaaa', borderColor:'#ffaaaa', hidden:true},
+              {label:'good', data:this.good, backgroundColor:'#aaaaff', borderColor:'#aaaaff', hidden:true},
+              {label:'bad rate', data:this.rate_bad, backgroundColor:'#ff4500', borderColor:'#ff4500', hidden:true},
+              {label:'good rate', data:this.rate_good, backgroundColor:'#007fff', borderColor:'#007fff', hidden:true},
+            ]
+          },
+          plugins: [highlightPlugin],
+          options: {
+            datasets:{
+              line:{
+                borderWidth:1,
+                pointRadius: 1
+              }
+
+            },
+
+            animation: {
+              duration: 0
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              highlight: { enabled: this.highlightEnabled },
+              zoom: {
+                zoom: { wheel: { enabled: false }, pinch: { enabled: false }, mode: 'xy' },
+                pan: { enabled: true },
+              },
+              legend: { labels: { color: '#D8D9DA' } },
+              tooltip: {
+                callbacks: {
+                  title: (context) => {
+                    const dataIndex = context[0].dataIndex;
+                    const timeString = this.showTimeFormatValue ? 
+                      `Time: ${fn.minutesToTimeString(dataIndex)} (${dataIndex})` :
+                      `Step: ${dataIndex}`;
+                    return timeString;
+                  }
+                }
+              }
+            },
+            interaction: { intersect: false },
+            scales: {
+              x: {
+                display: true,
+                title: { display: true },
+                ticks: {
+                  display: true,
+                  maxTicksLimit: 100,
+                  color: '#B4B7C0',
+                  callback: (value) => {
+                    const tickValue = this.showTimeFormatValue ? fn.minutesToTimeString(value) : value;
+                    return tickValue;
+                  }
+                },
+                grid: { color: '#3A3D42' },
+              },
+              y: {
+                display: true,
+                title: { display: true, text: 'Value', color: '#D8D9DA' },
+                suggestedMin: 0,
+                ticks: { color: '#B4B7C0' },
+                grid: { color: '#3A3D42' }
+              },
+              y_errors: {
+                position: 'right',
+                display: true,
+                title: { display: true, text: 'Error Related Value', color: '#D8D9DA' },
+                suggestedMin: 0,
+                suggestedMax: 1,
+                ticks: { color: '#B4B7C0' },
+                grid: { drawOnChartArea: false, color: '#3A3D42' }
+              },
+            },
+          },
+        };
+        
+        try {
+          this._chart = new Chart(ctx, config);
+          this._chart.debounceEnabled = this.debounceEnabled;
+          this._chart.debounceTime = this.debounceTime;
+        } catch (error) {
+          console.error('Error creating chart:', error);
+        }
+      },
+      updateTimeFormat() {
+        if (this._chart) {
+          // Update the x-axis ticks callback
+          this._chart.options.scales.x.ticks.callback = (value) => {
+            const tickValue = this.showTimeFormatValue ? fn.minutesToTimeString(value) : value;
+            return tickValue;
+          };
+          
+          // Update the tooltip callback
+          this._chart.options.plugins.tooltip.callbacks.title = (context) => {
+            const dataIndex = context[0].dataIndex;
+            return this.showTimeFormatValue ? 
+              `Time: ${fn.minutesToTimeString(dataIndex)} (${dataIndex})` :
+              `Step: ${dataIndex}`;
+          };
+          
+          // Force chart update
+          this._chart.update('none');
+        }
+      },
+    },
+    beforeUnmount() {
+      if (this._chart) {
+        this._chart.destroy();
+      }
+    }
+  };
+
     Chart.register(ChartZoom);
 
     const highlightPlugin = {
@@ -462,128 +697,13 @@
       },
     };
 
-    const getChartConfig = function(vueFuncts){
-
-      return {
-        type: "line",
-        data: {
-          labels: [],
-          datasets: [],
-        },
-        plugins: [highlightPlugin],
-        options: {
-          datasets: {
-            line:{
-            borderWidth: 1,
-            pointRadius: 1
-
-            },
-          },
-          responsive: true,
-          plugins: {
-            highlight: { enabled: true }, // Configure the highlight plugin to be enabled by default
-            zoom: {
-              zoom: {
-                wheel: {
-                  enabled: false,
-                },
-                pinch: {
-                  enabled: false,
-                },
-                mode: "xy",
-              },
-              pan: {
-                enabled: true,
-                // mode: "x",
-                // modifierKey: "shift",
-              },
-            },
-            legend: {
-              labels: {
-                color: '#D8D9DA' // Grafana-like text color for legend
-              }
-            },
-            tooltip: {
-              callbacks: {
-                title: function(context) {
-                  const dataIndex = context[0].dataIndex;
-                  return vueFuncts.showTimeFormat.value ? 
-                    `Time: ${fn.minutesToTimeString(dataIndex)} (${dataIndex})` : 
-                    `Step: ${dataIndex}`;
-                }
-              }
-            }
-          },
-          interaction: {
-            intersect: false,
-          },
-          scales: { // Corrected from xscales to scales
-            x: {
-              display: true,
-              title: {
-                display: true,
-              },
-              ticks: {
-                display: true,
-                maxTicksLimit: 100, // Adjust this number as needed
-                color: '#B4B7C0', // Grafana-like tick color
-                callback: function(value) {
-                  return fn.minutesToTimeString(value);
-                }
-              },
-              grid: {
-                color: '#3A3D42' // Grafana-like grid color
-              },
-            },
-            y: {
-              display: true,
-              title: {
-                display: true,
-                text: "Value",
-                color: '#D8D9DA',
-              },
-              suggestedMin: 0,
-              ticks: {
-                color: '#B4B7C0',
-              },
-              grid: {
-                color: '#3A3D42'
-              }
-            },
-            y_errors: {
-              position: 'right', // Common for a second y-axis
-              display: true,
-              title: {
-                display: true,
-                text: "Error Related Value",
-                color: '#D8D9DA',
-              },
-              suggestedMin: 0,
-              suggestedMax: 1,
-              ticks: {
-                color: '#B4B7C0',
-              },
-              grid: {
-                drawOnChartArea: false, // Common for secondary axis to not clutter
-                color: '#3A3D42'
-              }
-            },
-          },
-        },
-      };
-    }
-
     const { createApp } = Vue;
+    
     const app = createApp({
-      data() {
-        return {
-        };
-      },
-
       methods: {
       },
       setup() {
-
+        
         // localStorage keys
         const LS_KEYS = {
           BAD: 'slo_helper_bad_v1', // Added _v1 in case of structure changes later
@@ -636,91 +756,78 @@
         let expandedBad      = Vue.ref('');
         let expandedGood     = Vue.ref('');
 
+        // --- COMPUTED CHART DATA ---
+        const chartData = Vue.reactive({
+          alert1: [],
+          alert2: [],
+          threshold1: [],
+          threshold2: [],
+          bad: [],
+          good: [],
+          rate_bad: [],
+          rate_good: [],
+          labels: []
+        });
 
-        let config = getChartConfig({showTimeFormat})
-
-        const updateChart = function(){
+        // Function to update chart data
+        const updateChartData = () => {
           const def_bad = fn.serieDefFromString(bad.value);
           const def_good = fn.serieDefFromString(good.value);
-          const serie_bad =fn.makeSerie(def_bad);
-        console.log("serie_bad", serie_bad)
-          const serie_good =fn.makeSerie(def_good);
+          const serie_bad = fn.makeSerie(def_bad);
+          const serie_good = fn.makeSerie(def_good);
           bad_length.value = serie_bad.length;
           good_length.value = serie_good.length;
-          const rate_bad = fn.rateOverN(serie_bad, 1)
-          const rate_good = fn.rateOverN(serie_good, 1)
-          step_values.value = {bad_values: serie_bad, good_values: serie_good, rate_bad, rate_good};
-          
+          const rate_bad = fn.rateOverN(serie_bad, 1);
+          const rate_good = fn.rateOverN(serie_good, 1);
+          step_values.value = { bad_values: serie_bad, good_values: serie_good, rate_bad, rate_good };
           // Calculate expanded definitions
           expandedBad.value = fn.expandSeriesDefinition(bad.value);
           expandedGood.value = fn.expandSeriesDefinition(good.value);
-
           let alert1, alert2;
           if (selectedFormula.value === 'countOverN') {
             alert1 = fn.sumOverN(serie_bad, short.value);
             alert2 = fn.sumOverN(serie_bad, long.value);
-          } else { // Default to proportionRateOverN
+          } else {
             alert1 = fn.proportionRateOverN(serie_bad, serie_good, short.value);
             alert2 = fn.proportionRateOverN(serie_bad, serie_good, long.value);
           }
-
-          const max = Math.max(serie_bad.length, serie_good.length)
+          const max = Math.max(serie_bad.length, serie_good.length);
           const th1 = fn.makeSerieConstant(parseFloat(threshold1.value), max);
           const th2 = fn.makeSerieConstant(parseFloat(threshold2.value), max);
-
-          // Preserve current visibility states
-          const currentDatasets = myChart.data?.datasets || [];
-          const hiddenMap = {};
-          currentDatasets.forEach((dataset, index) => {
-            hiddenMap[dataset.label] = !myChart.isDatasetVisible(index);
-          });
-
-
-          config.data = {
-            labels : new Array(max).fill(0).map((_, i) => i.toString()),
-            datasets : [
-            {label:"alert1", data:alert1, backgroundColor:'#73bf79', borderColor:'#73bf79', hidden: hiddenMap["alert1"] },
-            {label:"alert2", data:alert2, backgroundColor:'#f2cc0c', borderColor:'#f2cc0c', hidden: hiddenMap["alert2"]},
-            {label:"threshold1", data: th1, backgroundColor:'#6495ed', borderColor:'#6495ed', pointRadius:0, borderDash:[10, 10], hidden: hiddenMap["threshold1"]},
-            {label:"threshold2", data: th2, backgroundColor:'#ed6495', borderColor:'#ed6495', pointRadius:0, borderDash:[10, 10], hidden: hiddenMap["threshold2"]},
-            {label:"bad", data:serie_bad, backgroundColor:'#ffaaaa', borderColor:'#ffaaaa', hidden: hiddenMap["bad"] !== undefined ? hiddenMap["bad"] : true},
-            {label:"good", data:serie_good, backgroundColor:'#aaaaff', borderColor:'#aaaaff', hidden: hiddenMap["good"] !== undefined ? hiddenMap["good"] : true},
-            {label:"bad rate", data:rate_bad, backgroundColor:'#ff4500', borderColor:'#ff4500', hidden: hiddenMap["bad rate"] !== undefined ? hiddenMap["bad rate"] : true},
-            {label:"good rate", data:rate_good, backgroundColor:'#007fff', borderColor:'#007fff', hidden: hiddenMap["good rate"] !== undefined ? hiddenMap["good rate"] : true},
-          ]};
-
-          myChart.update()
-        }
-
-
-        const myChart = new Chart(document.getElementById("chart"), config);
-        myChart.debounceEnabled = debounceEnabled.value;
-        myChart.debounceTime = debounceTime.value;
-        window.myChart = myChart;
-        
-        // Ensure chart's highlight option matches the Vue ref's initial state
-        if (myChart.options.plugins.highlight) {
-            myChart.options.plugins.highlight.enabled = highlightEnabled.value;
-        }
-
-        const updateHighlightSetting = () => {
-          if (myChart && myChart.options && myChart.options.plugins && myChart.options.plugins.highlight) {
-            myChart.options.plugins.highlight.enabled = highlightEnabled.value;
-            myChart.update();
-          }
+          
+          // Update the reactive object
+          chartData.alert1 = alert1;
+          chartData.alert2 = alert2;
+          chartData.threshold1 = th1;
+          chartData.threshold2 = th2;
+          chartData.bad = serie_bad;
+          chartData.good = serie_good;
+          chartData.rate_bad = rate_bad;
+          chartData.rate_good = rate_good;
+          chartData.labels = new Array(max).fill(0).map((_, i) => i.toString());
+          
         };
 
-        const updateTimeFormatSetting = () => {
-          if (myChart && myChart.options && myChart.options.scales && myChart.options.scales.x) {
-            myChart.options.scales.x.ticks.callback = showTimeFormat.value ? 
-              function(value) { return fn.minutesToTimeString(value); } : 
-              function(value) { return value; };
-            myChart.update();
-          }
-        };
-        // Set initial time format setting
-        updateTimeFormatSetting();
+        // Initial update
+        updateChartData();
 
+        // Throttled update function for chart data
+        let updateTimeout = null;
+        let isUpdating = Vue.ref(false);
+        const throttledUpdateChartData = () => {
+          if (updateTimeout) {
+            clearTimeout(updateTimeout);
+          }
+          isUpdating.value = true;
+          updateTimeout = setTimeout(() => {
+            updateChartData();
+            isUpdating.value = false;
+          }, 500); // 300ms throttle
+        };
+
+        // Watch for changes and update chart data with throttling
+        Vue.watch([bad, good], throttledUpdateChartData);
+        Vue.watch([short, long, threshold1, threshold2, selectedFormula], updateChartData);
 
         // Watchers to save to localStorage
         Vue.watch(bad, (newValue) => { localStorage.setItem(LS_KEYS.BAD, newValue); });
@@ -731,12 +838,10 @@
         Vue.watch(threshold2, (newValue) => { localStorage.setItem(LS_KEYS.THRESHOLD2, newValue.toString()); });
         Vue.watch(selectedFormula, (newValue) => { localStorage.setItem(LS_KEYS.SELECTED_FORMULA, newValue); });
         Vue.watch(debounceEnabled, (newValue) => { 
-          myChart.debounceEnabled = newValue;
           localStorage.setItem(LS_KEYS.DEBOUNCE_ENABLED, newValue); 
         });
 
         Vue.watch(debounceTime, (newValue) => { 
-          myChart.debounceTime = newValue;
           localStorage.setItem(LS_KEYS.DEBOUNCE_TIME, newValue); 
         });
 
@@ -772,10 +877,8 @@
         if (initialTests && runUnitTests){
           runUnitTests();
         }
-        updateChart() // Initial chart render
 
-        return {
-          render: updateChart,
+        const result = {
           bad, 
           bad_length,
           good, 
@@ -788,8 +891,6 @@
           highlightEnabled, // Expose to template for v-model
           debounceEnabled,
           debounceTime,
-          updateHighlightSetting, // Expose to template for @change
-          updateTimeFormatSetting, // Expose to template for @change
           selectedFormula, // Expose for v-model on select
           showHelpModal, // Expose for modal visibility
           toggleHelpModal, // Expose for modal toggle
@@ -798,11 +899,19 @@
           expandedBad, // Expose expanded bad definition
           expandedGood, // Expose expanded good definition
           copyToClipboard, // Expose for copy functionality
+          chartData, // Expose the reactive object
+          isUpdating, // Expose updating status
         };
+        
+        return result;
       },
     });
 
-    app.mount("#app");
+    
+    // Register the ChartComponent
+    app.component('chartcomponent', ChartComponent);
+
+      app.mount("#app");
   </script>
   <style>
     html, body {
@@ -813,11 +922,13 @@
       padding: 10px; /* Further reduced padding for body */
       display: flex; /* Ensure body takes full height if needed */
       flex-direction: column;
+      height: 100vh; /* Full viewport height */
     }
     .main-container {
       display: flex;
       flex-grow: 1; /* Allows main-container to fill available space */
       gap: 10px; /* Reduced space between config panel and chart */
+      height: calc(100vh - 20px); /* Full height minus body padding */
     }
     .config-panel { /* Formerly #app, now a class for the left panel */
       background-color: #1F2126; /* Slightly lighter panel background */
@@ -835,7 +946,11 @@
       padding: 10px; /* Reduced padding around the canvas */
       display: flex; /* To help center/contain the canvas if needed */
       position: relative; /* For responsive chart */
+      min-height: 400px; /* Ensure minimum height for chart visibility */
+      height: 100%; /* Take full height of parent */
     }
+    
+
     h2 {
       color: #E0E0E0;
       margin-top: 0;
@@ -937,7 +1052,6 @@
     /* Series Values Section Styles */
     .series-values-container {
       background-color: #1F2126;
-      margin-top: 10px;
       padding: 15px;
       border-radius: 4px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -974,7 +1088,6 @@
     }
     
     .series-data {
-      max-height: 300px;
       overflow-y: auto;
       font-family: "Courier", "Monaco", monospace;
       font-size: 12px;
@@ -1059,4 +1172,5 @@
       font-size: 12px;
     }
   </style>
+</body>
 </html>
