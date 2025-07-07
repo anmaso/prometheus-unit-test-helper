@@ -1,74 +1,86 @@
-# SLO Unit Test Helper - Grafana Style
+# SLO Unit Test Helper
 
-A web-based visualization tool for testing and designing SLO (Service Level Objective) scenarios. This tool helps you visualize how good and bad events affect SLO calculations over time, with support for different alert formulas, thresholds, and highlighting features.
+A Vue 3 single-page application for visualizing SLO (Service Level Objective) scenarios using Chart.js. This tool helps you define and visualize series of good and bad events over time, with configurable thresholds and alert formulas.
+
+## Project Structure
+
+The project has been refactored into a modular structure for better maintainability:
+
+```
+prometheus-unit-test-helper/
+├── index.html              # Main HTML file with Vue template
+├── css/
+│   └── styles.css          # All CSS styles
+├── js/
+│   ├── utils.js            # Utility functions for series processing
+│   ├── chart-component.js  # Vue ChartComponent definition
+│   ├── chart-plugins.js    # Chart.js plugins (highlight plugin)
+│   └── app.js              # Main Vue app logic and setup
+├── tests.js                # Unit tests (if any)
+├── Dockerfile              # Docker configuration
+└── README.md               # This file
+```
 
 ## Features
 
-- **Interactive Chart Visualization**: Real-time charts using Chart.js with pan/zoom capabilities
-- **Multiple Alert Formulas**: Support for "Proportion Rate over N" and "Count over N" calculations  
-- **Flexible Event Series Definition**: Define complex event patterns using a prometheus-like syntax
-- **Alert Highlighting**: Visual highlighting when alert conditions are met
-- **Debounce Support**: Configure alert debouncing to reduce noise
-- **Series Values Display**: View raw data values for debugging
-- **Persistent Configuration**: Settings are saved to localStorage
-- **Grafana-Style UI**: Dark theme matching Grafana's visual design
-
-## Quick Start
-
-1. Open `index.html` in a web browser
-2. Configure your good and bad event series
-3. Set alert thresholds and window sizes
-4. Click "Render" to visualize your SLO scenario
+- **Series Definition**: Define event series using Prometheus alert format
+- **Multiple Formulas**: Support for proportion rate and count over N calculations
+- **Real-time Visualization**: Interactive Chart.js charts with zoom and pan
+- **Alert Highlighting**: Visual highlighting when both alerts exceed thresholds
+- **Debouncing**: Configurable debounce for alert highlighting
+- **Time Format Toggle**: Switch between step numbers and time format
+- **Local Storage**: Persist configuration across sessions
+- **Responsive Design**: Grafana-like dark theme
 
 ## Usage
 
-### Event Series Definition
+1. Open `index.html` in a web browser
+2. Configure your good and bad event series
+3. Set thresholds and alert windows
+4. Choose calculation formula (proportion rate or count)
+5. Toggle highlighting and debouncing options
+6. View real-time chart updates
 
-Define event series using segments in the format: `[initial]+[increment]x[steps]`
+## Series Definition Format
 
-**Basic Examples:**
-- `0+1x10` - Start at 0, increment by 1 for 10 steps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-- `100+0x5` - Constant value 100 for 5 steps: [100, 100, 100, 100, 100]
-- `5-2x3` - Start at 5, decrement by 2 for 3 steps: [5, 3, 1, -1]
+Each segment follows the pattern: `[initial]+[increment]x[steps]`
 
-**Advanced Examples:**
-- `#+50x5` - Continue from last value, increment by 50 for 5 steps
-- `0+0x60 150+150x10 #+0x60` - Complex pattern with multiple segments
-- `5x3` - Shorthand for constant: [5, 5, 5]
-- `_x5` - Special underscore values (5 underscores)
+- `initial`: Starting value (use `#` to continue from previous value)
+- `increment`: Value to add at each step
+- `steps`: Number of data points in this segment
 
-### Alert Formulas
+Examples:
+- `0+0x60 150+150x10 #+0x60` - Starts at 0 for 60 steps, jumps to 150 and increments by 150 for 10 steps, then continues from last value with 0 increment for 60 steps
+- `1x4` - Single value 1 repeated 4 times
+- `#x5` - Continue from last value for 5 more steps
 
-#### Proportion Rate over N
-Calculates: `sum(bad events in window) / (sum(bad events in window) + sum(good events in window))`
-- Returns a ratio between 0 and 1
-- Typical thresholds: 0.01 (1%), 0.05 (5%), etc.
+## Development
 
-#### Count over N  
-Calculates: `sum(bad events in window)`
-- Returns absolute count of bad events
-- Only uses bad events series
-- Typical thresholds: 10, 100, 1000, etc.
+### Adding New Features
 
-### Configuration Options
+1. **Utility Functions**: Add to `js/utils.js`
+2. **Chart Components**: Modify `js/chart-component.js`
+3. **Chart Plugins**: Add to `js/chart-plugins.js`
+4. **App Logic**: Update `js/app.js`
+5. **Styling**: Modify `css/styles.css`
 
-| Field | Description |
-|-------|-------------|
-| **Good Events** | Define the series of successful events over time |
-| **Bad Events** | Define the series of failed events over time |
-| **Alert Formula** | Choose between "Proportion Rate over N" or "Count over N" |
-| **Alert 1 Window** | Window size (data points) for short-term alert calculation |
-| **Alert 2 Window** | Window size (data points) for long-term alert calculation |
-| **Threshold 1** | Threshold value for Alert 1 series |
-| **Threshold 2** | Threshold value for Alert 2 series |
+### Building
 
-### Controls
+The application is a single-page app that can be served directly from a web server. No build process is required.
 
-- **Render Button**: Update chart with current configuration (or press Enter in input fields)
-- **Help Button**: Show detailed help modal
-- **Show Series Values**: Display raw data values below the chart
-- **Highlight Alert**: Enable visual highlighting when both alerts exceed thresholds
-- **Debounce Alert**: Only highlight after alert persists for specified steps
+### Testing
+
+Run unit tests by adding `?test=true` to the URL.
+
+## Dependencies
+
+- Vue 3 (CDN)
+- Chart.js 4.4.0 (CDN)
+- Chart.js Zoom Plugin 2.2.0 (CDN)
+
+## Browser Support
+
+Modern browsers with ES6 module support. The application uses ES6 modules for better code organization.
 
 ## Example Scenarios
 
