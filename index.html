@@ -134,11 +134,20 @@
         <div class="series-data">
           <h4>Step Values:</h4>
           <div class="series-item">
-            <span class="index">step</span> <span class="value">good</span><span class="value bad_events">bad</span><span class="value">rate good</span></span><span class="value bad_events">rate bad</span>
+            <span class="index">step</span>
+            <span v-if="showTimeFormat" class="time-column">time</span>
+            <span class="value">good</span>
+            <span class="value bad_events">bad</span>
+            <span class="value">rate good</span>
+            <span class="value bad_events">rate bad</span>
           </div>
           <div v-for="(value, index) in step_values.good_values" :key="'good-' + index" class="series-item">
-            <span class="index">{{index}}:</span> <span class="value">{{value}}</span><span class="value bad_events">{{step_values.bad_values[index]}}</span><span class="value">{{step_values.rate_good[index]}}</span></span><span class="value bad_events">{{step_values.rate_bad[index]}}</span>
-
+            <span class="index">{{index}}:</span>
+            <span v-if="showTimeFormat" class="time-column">{{fn.minutesToTimeString(index)}}</span>
+            <span class="value">{{value}}</span>
+            <span class="value bad_events">{{step_values.bad_values[index]}}</span>
+            <span class="value">{{step_values.rate_good[index]}}</span>
+            <span class="value bad_events">{{step_values.rate_bad[index]}}</span>
           </div>
         </div>
 

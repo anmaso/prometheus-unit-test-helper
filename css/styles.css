@@ -208,6 +208,14 @@ select {
   flex-shrink: 0;
 }
 
+.series-item .time-column {
+  color: #B4B7C0;
+  width: 60px;
+  flex-shrink: 0;
+  margin-left: 5px;
+  font-size: 11px;
+}
+
 .series-item .value {
   margin-left: 10px;
   width: 4rem;

@@ -203,6 +203,7 @@ export function createApp() {
         copyToClipboard,
         chartData,
         isUpdating,
+        fn, // Expose utility functions to template
       };
       
       return result;

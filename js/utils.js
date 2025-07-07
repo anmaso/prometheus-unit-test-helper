@@ -88,7 +88,7 @@ export const fn = {
       if (len>0 && values[len] < values[len-1]){
         values[len]=values[len-1]+values[len]
       }
-      for (i = 0; i < s.steps; i++) {
+      for (let i = 0; i < s.steps; i++) {
         if (s.increment=='_'){
           values.push(s.increment)
         }else{
@@ -101,7 +101,7 @@ export const fn = {
 
   rateOverN: (serie,N) => {
     let values = new Array(serie.length).fill(0);
-    for (i = 0; i < serie.length; i++) {
+    for (let i = 0; i < serie.length; i++) {
       values[i] =
         (i >= N ? serie[i] - serie[i - N] : serie[i])/N
       if (values[i] < 0) values[i] = 0;
@@ -112,7 +112,7 @@ export const fn = {
   proportionRateOverN: (bad, good, N) => {
     let max = bad.length >= good.length ? bad.length : good.length;
     let values = new Array(max).fill(0);
-    for (i = 0; i < max; i++) {
+    for (let i = 0; i < max; i++) {
       let goodDelta =
         i < good.length ? (i >= N ? ((good[i] - good[i - N])>=0?good[i] - good[i - N]:good[i]) : good[i]) : 0;
       let badDelta =
