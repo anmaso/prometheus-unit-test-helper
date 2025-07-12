@@ -34,7 +34,7 @@ html, body {
   display: flex; /* To help center/contain the canvas if needed */
   position: relative; /* For responsive chart */
   min-height: 400px; /* Ensure minimum height for chart visibility */
-  height: 100%; /* Take full height of parent */
+  height: 50vh; /* Take full height of parent */
 }
 
 h2 {

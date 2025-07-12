@@ -96,11 +96,12 @@
 
           <h4>Controls:</h4>
           <ul>
-            <li><strong>Render Button:</strong> Click to update the chart with the current input configurations. You can also press Enter in the 'bad events' or 'good events' input fields.</li>
             <li><strong>Highlight Alert Checkbox:</strong> Toggles the visual highlighting on the chart. Highlighting occurs when <em>both</em> <code>alert1</code> is above <code>threshold1</code> AND <code>alert2</code> is above <code>threshold2</code>.</li>
             <li><strong>Debounce Alert Checkbox:</strong> Enables alert debouncing. If checked, highlights will only appear if the alert condition (<code>alert1</code> > <code>threshold1</code> AND <code>alert2</code> > <code>threshold2</code>) persists for the specified "Debounce Time".</li>
             <li><strong>Debounce Time (steps):</strong> The number of consecutive data points an alert condition must be true before it's visually highlighted (if "Debounce alert" is checked).</li>
-             <li><strong>Formula Selector:</strong> Choose the calculation method for <code>alert1</code> and <code>alert2</code> series:
+            <li><strong>Show Series Values Checkbox:</strong> Displays the expanded series definitions and a detailed table showing step-by-step values for good events, bad events, and their rates. Also shows copy buttons for easy copying of expanded definitions.</li>
+            <li><strong>Show Time Format Checkbox:</strong> Toggles between showing step numbers and time format (e.g., "1h 30m") on the chart axis and tooltips. Time format assumes each step represents 1 minute.</li>
+            <li><strong>Formula Selector:</strong> Choose the calculation method for <code>alert1</code> and <code>alert2</code> series:
               <ul>
                 <li><strong>Proportion Rate over N:</strong> Calculates <code>sum(bad events in window) / (sum(bad events in window) + sum(good events in window))</code>. This is a ratio, typically between 0 and 1.</li>
                 <li><strong>Count over N:</strong> Calculates <code>sum(bad events in window)</code>. This is an absolute count/sum of bad events over the specified window. It only uses the 'bad events' series for its calculation.</li>
@@ -108,7 +109,27 @@
             </li>
           </ul>
 
-          <p>The chart displays various series including the raw bad/good event counts (hidden by default), their rates, the calculated alert proportions, and the defined thresholds.</p>
+          <h4>Chart Features:</h4>
+          <ul>
+            <li><strong>Series Display:</strong> The chart shows multiple series including alert1, alert2, thresholds, raw bad/good events (hidden by default), and their rates (hidden by default). You can toggle series visibility in the chart legend.</li>
+            <li><strong>Zoom and Pan:</strong> The chart supports zooming and panning for detailed analysis. Use mouse wheel to zoom and drag to pan.</li>
+            <li><strong>Tooltips:</strong> Hover over data points to see detailed values. Tooltips show step number or time format based on the "Show Time Format" setting.</li>
+            <li><strong>Auto-update:</strong> The chart automatically updates when you modify any input values. Changes to bad/good events are throttled to prevent excessive updates.</li>
+          </ul>
+
+          <h4>Advanced Series Syntax:</h4>
+          <ul>
+            <li><strong>Special Values:</strong> Use <code>_</code> for special values that don't affect calculations (e.g., <code>_x5</code> for 5 special values).</li>
+            <li><strong>Decimal Values:</strong> Support for decimal numbers in series definitions (e.g., <code>0.5+0.1x2</code>).</li>
+            <li><strong>Negative Values:</strong> Support for negative initial values and decrements (e.g., <code>-2+4x3</code> or <code>1-2x4</code>).</li>
+            <li><strong>Shorthand Notation:</strong> Use <code>axn</code> as shorthand for <code>a+0xn</code> (constant value for n+1 steps).</li>
+          </ul>
+
+          <h4>Data Persistence:</h4>
+          <p>All your configuration settings are automatically saved to your browser's localStorage, so they will persist between sessions.</p>
+
+          <h4>Testing:</h4>
+          <p>Add <code>?test=true</code> to the URL to run unit tests in the browser console, which verify the core functionality of the series parsing and calculation functions.</p>
         </div>
       </div>
     </div>
