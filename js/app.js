@@ -32,10 +32,10 @@ export function createApp() {
 
       const initialGood = localStorage.getItem(LS_KEYS.GOOD) || "0+1000x60 #+850x10 #+1000x60 #+0x60 #+850x10 #+1000x60";
       const initialBad = localStorage.getItem(LS_KEYS.BAD) || "0+0x60 150+150x10 #+0x60 #+0x60 #+150x10 #+0x60";
-      const initialShort = localStorage.getItem(LS_KEYS.SHORT) || 0;
-      const initialLong = localStorage.getItem(LS_KEYS.LONG) || 0;
-      const initialThreshold1 = localStorage.getItem(LS_KEYS.THRESHOLD1) || 0;
-      const initialThreshold2 = localStorage.getItem(LS_KEYS.THRESHOLD2) || 0;
+      const initialShort = localStorage.getItem(LS_KEYS.SHORT) || 5;
+      const initialLong = localStorage.getItem(LS_KEYS.LONG) || 60;
+      const initialThreshold1 = localStorage.getItem(LS_KEYS.THRESHOLD1) || 0.01344;
+      const initialThreshold2 = localStorage.getItem(LS_KEYS.THRESHOLD2) || 0.01344;
       const initialSelectedFormula = localStorage.getItem(LS_KEYS.SELECTED_FORMULA) || 'proportionRateOverN';
       const initialHighlightEnabled = localStorage.getItem(LS_KEYS.HIGHLIGHT_ENABLED);
       const initialDebounceEnabled = localStorage.getItem(LS_KEYS.DEBOUNCE_ENABLED);
