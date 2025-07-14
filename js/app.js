@@ -177,8 +177,6 @@ export function createApp() {
         }
       };
 
-      console.log("hola")
-
       if (initialTests){
         runUnitTests();
       }
