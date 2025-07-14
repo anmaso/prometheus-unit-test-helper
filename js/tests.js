@@ -1,4 +1,5 @@
-function runUnitTests() {
+import { fn } from './utils.js';
+export const runUnitTests = function() {
         console.log("%cExecuting Unit Tests...", "color: blue; font-size: 16px; font-weight: bold;");
         let allTestsPassed = true;
         let testsRun = 0;
@@ -59,6 +60,7 @@ function runUnitTests() {
           //assertEqual(fn.makeSerie(fn.serieDefFromString("5 #+1x1")), [5, 5, 6], "Series with # after a number");
           //assertEqual(fn.makeSerie(fn.serieDefFromString("1 _ #+1x1")), [1, "_", 0, 1], "Series with # after special (defaults to 0)");
             assertEqual(fn.makeSerie(fn.serieDefFromString("0.5+0.1x2")), [0.5, 0.6, 0.7], "Decimal series 0.5+0.1x2");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("3+0x2 4+0x2")), [3, 3, 3, 4, 4, 4], "Series of fixed values  3 3 3 4 4 4");
         }
 
         function testMakeSerieConstant() {

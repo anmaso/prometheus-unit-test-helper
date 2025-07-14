@@ -1,6 +1,7 @@
 import { fn } from './utils.js';
 import { ChartComponent } from './chart-component.js';
 import { highlightPlugin } from './chart-plugins.js';
+import { runUnitTests } from './tests.js';
 
 // Make highlightPlugin available globally for ChartComponent
 window.highlightPlugin = highlightPlugin;
@@ -176,8 +177,10 @@ export function createApp() {
         }
       };
 
-      if (initialTests && window.runUnitTests){
-        window.runUnitTests();
+      console.log("hola")
+
+      if (initialTests){
+        runUnitTests();
       }
 
       const result = {

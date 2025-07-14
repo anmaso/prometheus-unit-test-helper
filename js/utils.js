@@ -82,11 +82,9 @@ export const fn = {
           // Handle special underscore values directly
           values.push(s.initial);
         } else {
-          values.push( (len?values[values.length - 1]:0) + s.initial);
+          // For separate series definitions, use the initial value directly
+          values.push(s.initial);
         }
-      }
-      if (len>0 && values[len] < values[len-1]){
-        values[len]=values[len-1]+values[len]
       }
       for (let i = 0; i < s.steps; i++) {
         if (s.increment=='_'){
