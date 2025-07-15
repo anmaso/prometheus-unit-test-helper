@@ -150,6 +150,7 @@ select {
 
 /* Series Values Section Styles */
 .series-values-container {
+  width: 300px;
   background-color: #1F2126;
   padding: 15px;
   border-radius: 4px;
@@ -223,6 +224,10 @@ select {
 
 .bad_events {
   color: #ed7591;
+}
+
+.good_events {
+  color: #adcbe8;
 }
 
 .copy-button {

@@ -11,7 +11,7 @@
   <div class="main-container" id="app">
     <div class="config-panel">
       <h2>Configuration</h2>
-      good events <span class="expanded-definition-mini"><code>{{good_length}} data points, {{good_total_duration}} duration</code></span><input v-model="good" size="100" />
+      good events <span class="expanded-definition-mini"><code>{{good_length}} data points, {{good_total_duration}} duration</code></span><input class="good_events" v-model="good" size="100" />
       <div v-if="showSeriesValues" class="expanded-definition-mini">
         <button @click="copyToClipboard(expandedGood)" class="copy-button" title="Copy good events to clipboard">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -158,7 +158,6 @@
     <!-- Series Values Section -->
     <div v-if="showSeriesValues" class="series-values-container">
         <div class="series-data">
-          <h4>Step Values:</h4>
           <div class="series-item">
             <span class="index">step</span>
             <span v-if="showTimeFormat" class="time-column">time</span>
