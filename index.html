@@ -10,19 +10,19 @@
 
   <div class="main-container" id="app">
     <div class="config-panel">
-      <h2>Test Configuration</h2>
-      good events ({{good_length}} data points)<input v-model="good" size="100" />
+      <h2>Configuration</h2>
+      good events <span class="expanded-definition-mini"><code>{{good_length}} data points, {{good_total_duration}} duration</code></span><input v-model="good" size="100" />
       <div v-if="showSeriesValues" class="expanded-definition-mini">
-        <code>{{expandedGood}}</code>
         <button @click="copyToClipboard(expandedGood)" class="copy-button" title="Copy good events to clipboard">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
         </button>
+        <code>{{expandedGood}}</code>
       </div>
       <br/>
-      bad events ({{bad_length}} data points)<input class="bad_events" v-model="bad" size="100" />
+      bad events <span class="expanded-definition-mini"><code class="bad_events">{{bad_length}} data points, {{bad_total_duration}} duration</code></span><input class="bad_events" v-model="bad" size="100" />
       <div v-if="showSeriesValues" class="expanded-definition-mini">
         <code class="bad_events">{{expandedBad}}</code>
         <button @click="copyToClipboard(expandedBad)" class="copy-button" title="Copy bad events to clipboard">
@@ -65,6 +65,10 @@
       <br/> <!-- Added line break for better spacing -->
       <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" />
       <label for="showTimeFormatCheckbox" style="cursor: pointer;">Show time format</label>
+      <br/> <!-- Added line break for better spacing -->
+      <label for="intervalInput" style="margin-right: 10px;">Interval:</label>
+      <input id="intervalInput" v-model="interval" size="5" placeholder="1m" />
+      <small style="margin-left: 5px; color: #B4B7C0;">Time between samples (e.g., 1m, 5m, 1h, 30s)</small>
 
       <!-- Help Modal -->
       <div v-if="showHelpModal" class="modal-overlay" @click.self="toggleHelpModal()">
@@ -99,7 +103,8 @@
             <li><strong>Debounce Alert Checkbox:</strong> Enables alert debouncing. If checked, highlights will only appear if the alert condition (<code>alert1</code> > <code>threshold1</code> AND <code>alert2</code> > <code>threshold2</code>) persists for the specified "Debounce Time".</li>
             <li><strong>Debounce Time (steps):</strong> The number of consecutive data points an alert condition must be true before it's visually highlighted (if "Debounce alert" is checked).</li>
             <li><strong>Show Series Values Checkbox:</strong> Displays the expanded series definitions and a detailed table showing step-by-step values for good events, bad events, and their rates. Also shows copy buttons for easy copying of expanded definitions.</li>
-            <li><strong>Show Time Format Checkbox:</strong> Toggles between showing step numbers and time format (e.g., "1h 30m") on the chart axis and tooltips. Time format assumes each step represents 1 minute.</li>
+            <li><strong>Show Time Format Checkbox:</strong> Toggles between showing step numbers and time format (e.g., "1h 30m") on the chart axis and tooltips. Time format uses the configured interval setting.</li>
+            <li><strong>Interval:</strong> Specifies the time between samples. Supports seconds (s), minutes (m), hours (h), and days (d). Examples: "1m" (1 minute), "5m" (5 minutes), "1h" (1 hour), "30s" (30 seconds). Default is "1m".</li>
             <li><strong>Formula Selector:</strong> Choose the calculation method for <code>alert1</code> and <code>alert2</code> series:
               <ul>
                 <li><strong>Proportion Rate over N:</strong> Calculates <code>sum(bad events in window) / (sum(bad events in window) + sum(good events in window))</code>. This is a ratio, typically between 0 and 1.</li>
@@ -147,6 +152,7 @@
         :debounce-enabled="debounceEnabled"
         :debounce-time="debounceTime"
         :show-time-format="showTimeFormat"
+        :interval="interval"
       />
     </div>
     <!-- Series Values Section -->
@@ -163,7 +169,7 @@
           </div>
           <div v-for="(value, index) in step_values.good_values" :key="'good-' + index" class="series-item">
             <span class="index">{{index}}:</span>
-            <span v-if="showTimeFormat" class="time-column">{{fn.minutesToTimeString(index)}}</span>
+            <span v-if="showTimeFormat" class="time-column">{{fn.stepToTimeString(index, interval)}}</span>
             <span class="value">{{value}}</span>
             <span class="value bad_events">{{step_values.bad_values[index]}}</span>
             <span class="value">{{step_values.rate_good[index]}}</span>

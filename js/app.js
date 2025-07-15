@@ -27,7 +27,8 @@ export function createApp() {
         DEBOUNCE_ENABLED: 'slo_helper_debounce_enabled_v1', 
         DEBOUNCE_TIME: 'slo_helper_debounce_time_v1',
         SHOW_SERIES_VALUES: 'slo_helper_show_series_values_v1',
-        SHOW_TIME_FORMAT: 'slo_helper_show_time_format_v1'
+        SHOW_TIME_FORMAT: 'slo_helper_show_time_format_v1',
+        INTERVAL: 'slo_helper_interval_v1'
       };
 
       const initialGood = localStorage.getItem(LS_KEYS.GOOD) || "0+1000x60 #+850x10 #+1000x60 #+0x60 #+850x10 #+1000x60";
@@ -42,6 +43,7 @@ export function createApp() {
       const initialDebounceTime = localStorage.getItem(LS_KEYS.DEBOUNCE_TIME) || 0;
       const initialShowSeriesValues = localStorage.getItem(LS_KEYS.SHOW_SERIES_VALUES);
       const initialShowTimeFormat = localStorage.getItem(LS_KEYS.SHOW_TIME_FORMAT);
+      const initialInterval = localStorage.getItem(LS_KEYS.INTERVAL) || '1m';
       const initialTests = document.location.toString().indexOf('test=true')>0;
 
       let bad         = Vue.ref(initialBad);
@@ -60,6 +62,7 @@ export function createApp() {
       let showHelpModal    = Vue.ref(false);
       let showSeriesValues = Vue.ref(initialShowSeriesValues !== null ? JSON.parse(initialShowSeriesValues) : false);
       let showTimeFormat   = Vue.ref(initialShowTimeFormat !== null ? JSON.parse(initialShowTimeFormat) : true);
+      let interval         = Vue.ref(initialInterval);
       let badSeriesData    = Vue.ref([]);
       let goodSeriesData   = Vue.ref([]);
       let expandedBad      = Vue.ref('');
@@ -76,6 +79,19 @@ export function createApp() {
         rate_bad: [],
         rate_good: [],
         labels: []
+      });
+
+      // Computed properties for total duration
+      const bad_total_duration = Vue.computed(() => {
+        if (bad_length.value <= 0) return '0m';
+        const totalSteps = bad_length.value - 1; // Duration is steps - 1 (since we count intervals between points)
+        return fn.stepToTimeString(totalSteps, interval.value);
+      });
+
+      const good_total_duration = Vue.computed(() => {
+        if (good_length.value <= 0) return '0m';
+        const totalSteps = good_length.value - 1; // Duration is steps - 1 (since we count intervals between points)
+        return fn.stepToTimeString(totalSteps, interval.value);
       });
 
       // Function to update chart data
@@ -157,6 +173,9 @@ export function createApp() {
       Vue.watch(showTimeFormat, (newValue) => { 
         localStorage.setItem(LS_KEYS.SHOW_TIME_FORMAT, newValue); 
       });
+      Vue.watch(interval, (newValue) => { 
+        localStorage.setItem(LS_KEYS.INTERVAL, newValue); 
+      });
 
       const toggleHelpModal = () => {
         showHelpModal.value = !showHelpModal.value;
@@ -184,8 +203,10 @@ export function createApp() {
       const result = {
         bad, 
         bad_length,
+        bad_total_duration,
         good, 
         good_length,
+        good_total_duration,
         short, 
         step_values,
         long, 
@@ -199,6 +220,7 @@ export function createApp() {
         toggleHelpModal,
         showSeriesValues,
         showTimeFormat,
+        interval,
         expandedBad,
         expandedGood,
         copyToClipboard,

@@ -231,10 +231,8 @@ select {
   color: #B4B7C0;
   cursor: pointer;
   padding: 0px;
-  margin-left: 8px;
   border-radius: 4px;
   transition: all 0.2s ease;
-  display: flex;
   align-items: center;
   justify-content: center;
   min-width: 24px;
@@ -252,7 +250,6 @@ select {
 }
 
 .expanded-definition-mini {
-  display: flex;
   align-items: center;
   gap: 8px;
   font-family: "Courier", "Monaco", monospace;

@@ -140,7 +140,49 @@ export const fn = {
     return values;
   },
 
-  // Convert minutes to days, hours, minutes string representation
+  // Parse interval string to minutes (e.g., "1m" -> 1, "5m" -> 5, "1h" -> 60, "30s" -> 0.5)
+  parseIntervalToMinutes: (intervalString) => {
+    const match = intervalString.match(/^(\d+(?:\.\d+)?)(s|m|h|d)$/);
+    if (!match) {
+      console.warn(`Invalid interval format: ${intervalString}. Using 1m as default.`);
+      return 1;
+    }
+    
+    const value = parseFloat(match[1]);
+    const unit = match[2];
+    
+    switch (unit) {
+      case 's': return value / 60; // seconds to minutes
+      case 'm': return value; // minutes
+      case 'h': return value * 60; // hours to minutes
+      case 'd': return value * 1440; // days to minutes (24 * 60)
+      default: return 1;
+    }
+  },
+
+  // Convert step number to time string based on interval
+  stepToTimeString: (step, interval) => {
+    const intervalInMinutes = fn.parseIntervalToMinutes(interval);
+    const totalMinutes = step * intervalInMinutes;
+    
+    if (totalMinutes < 0) return '0m';
+    
+    const days = Math.floor(totalMinutes / 1440); // 24 * 60 = 1440 minutes per day
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const mins = Math.floor(totalMinutes % 60);
+    const secs = Math.floor((totalMinutes % 1) * 60);
+    
+    let result = '';
+    if (days > 0) result += days + 'd';
+    if (hours > 0) result += hours + 'h';
+    if (mins > 0) result += mins + 'm';
+    if (secs > 0 && totalMinutes < 60) result += secs + 's'; // Only show seconds if total is less than 1 hour
+    if (result === '') result = '0m';
+    
+    return result;
+  },
+
+  // Convert minutes to days, hours, minutes string representation (legacy function)
   minutesToTimeString: (minutes) => {
     if (minutes < 0) return '0m';
     

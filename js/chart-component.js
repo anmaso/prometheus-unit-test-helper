@@ -15,7 +15,8 @@ export const ChartComponent = {
     highlightEnabled: { type: Boolean, required: true },
     debounceEnabled: { type: Boolean, required: true },
     debounceTime: { type: [Number, String], required: true },
-    showTimeFormat: { type: Boolean, default: false }
+    showTimeFormat: { type: Boolean, default: false },
+    interval: { type: String, default: '1m' }
   },
   template: `<canvas ref="chartCanvas" style="width: 100%; height: 100%;"></canvas>`,
   mounted() {
@@ -36,6 +37,7 @@ export const ChartComponent = {
     highlightEnabled: 'renderChart',
     debounceEnabled: 'renderChart',
     debounceTime: 'renderChart',
+    interval: 'renderChart',
     showTimeFormat: {
       handler(newVal, oldVal) {
         this.updateTimeFormat();
@@ -137,7 +139,7 @@ export const ChartComponent = {
                 title: (context) => {
                   const dataIndex = context[0].dataIndex;
                   const timeString = this.showTimeFormatValue ? 
-                    `Time: ${fn.minutesToTimeString(dataIndex)} (${dataIndex})` :
+                    `Time: ${fn.stepToTimeString(dataIndex, this.interval)} (${dataIndex})` :
                     `Step: ${dataIndex}`;
                   return timeString;
                 }
@@ -154,7 +156,7 @@ export const ChartComponent = {
                 maxTicksLimit: 100,
                 color: '#B4B7C0',
                 callback: (value) => {
-                  const tickValue = this.showTimeFormatValue ? fn.minutesToTimeString(value) : value;
+                  const tickValue = this.showTimeFormatValue ? fn.stepToTimeString(value, this.interval) : value;
                   return tickValue;
                 }
               },
@@ -192,7 +194,7 @@ export const ChartComponent = {
       if (this._chart) {
         // Update the x-axis ticks callback
         this._chart.options.scales.x.ticks.callback = (value) => {
-          const tickValue = this.showTimeFormatValue ? fn.minutesToTimeString(value) : value;
+          const tickValue = this.showTimeFormatValue ? fn.stepToTimeString(value, this.interval) : value;
           return tickValue;
         };
         
@@ -200,7 +202,7 @@ export const ChartComponent = {
         this._chart.options.plugins.tooltip.callbacks.title = (context) => {
           const dataIndex = context[0].dataIndex;
           return this.showTimeFormatValue ? 
-            `Time: ${fn.minutesToTimeString(dataIndex)} (${dataIndex})` :
+            `Time: ${fn.stepToTimeString(dataIndex, this.interval)} (${dataIndex})` :
             `Step: ${dataIndex}`;
         };
         
