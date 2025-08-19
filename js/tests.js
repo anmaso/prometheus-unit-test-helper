@@ -483,4 +483,6 @@ export const runUnitTests = function() {
         } else {
             console.error("%cSome Unit Tests Failed.", "color: red; font-size: 18px; font-weight: bold;");
         }
+
+        return { allTestsPassed, testsRun, testsPassed };
     }

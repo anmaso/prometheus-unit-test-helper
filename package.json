@@ -1,0 +1,10 @@
+{
+  "name": "prometheus-unit-test-helper-test-cursor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:node": "node ./node-run-tests.mjs",
+    "start": "npx --yes http-server -p 5173 -c-1 ."
+  }
+}

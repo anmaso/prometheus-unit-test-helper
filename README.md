@@ -15,8 +15,10 @@ prometheus-unit-test-helper/
 │   ├── utils.js            # Utility functions for series processing
 │   ├── chart-component.js  # Vue ChartComponent definition
 │   ├── chart-plugins.js    # Chart.js plugins (highlight plugin)
+│   ├── tests.js            # Shared unit tests (browser + Node)
 │   └── app.js              # Main Vue app logic and setup
-├── tests.js                # Unit tests (if any)
+├── node-run-tests.mjs      # Node entry to run the same tests
+├── package.json            # ESM + npm scripts (start, test:node)
 ├── Dockerfile              # Docker configuration
 └── README.md               # This file
 ```
@@ -68,9 +70,26 @@ Examples:
 
 The application is a single-page app that can be served directly from a web server. No build process is required.
 
+### Local web server
+
+Run a simple local server to host the app during development:
+
+```
+npm run start
+```
+
+Then open `http://localhost:5173` in your browser.
+
+Opening `index.html` directly from the filesystem also continues to work if you prefer not to run a server.
+
 ### Testing
 
-Run unit tests by adding `?test=true` to the URL.
+- **Browser**: Append `?test=true` to the URL to run unit tests in the browser console.
+  - Example: `http://localhost:5173/?test=true`
+- **Node/CI**: Run the same tests from Node (exits 0 on pass, 1 on failure):
+```
+npm run test:node
+```
 
 ## Dependencies
 
@@ -130,10 +149,19 @@ Writen as a single html file to reduce dependencies, just open the file and you 
 
 ### File Structure
 ```
-metrics-visualizer-nodejs/
-├── index.html          # Main application
-├── tests.js            # Unit tests
-└── README.md          # This file
+prometheus-unit-test-helper/
+├── index.html
+├── css/
+│   └── styles.css
+├── js/
+│   ├── utils.js
+│   ├── chart-component.js
+│   ├── chart-plugins.js
+│   ├── tests.js
+│   └── app.js
+├── node-run-tests.mjs
+├── package.json
+└── README.md
 ```
 
 ### Browser Support
@@ -142,9 +170,13 @@ Works in all modern browsers. No build process required - just open `index.html`
 ## Development
 
 ### Running Tests
-Include `?test=true` in the URL to run unit tests on page load:
+- **Browser**:
 ```
 file:///path/to/index.html?test=true
+```
+- **Node/CI**:
+```
+npm run test:node
 ```
 
 ### Local Storage
@@ -156,7 +188,7 @@ This is a self-contained HTML application. To contribute:
 
 1. Make changes to `index.html`
 2. Test your changes by opening in a browser
-3. Run tests with `?test=true` parameter
+3. Run tests with `?test=true` parameter or `npm run test:node`
 4. Update this README if adding new features
 
 ## License
