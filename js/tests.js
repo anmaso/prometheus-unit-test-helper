@@ -137,6 +137,8 @@ export const runUnitTests = function() {
           //assertEqual(fn.makeSerie(fn.serieDefFromString("5 #+1x1")), [5, 5, 6], "Series with # after a number");
           //assertEqual(fn.makeSerie(fn.serieDefFromString("1 _ #+1x1")), [1, "_", 0, 1], "Series with # after special (defaults to 0)");
             assertEqual(fn.makeSerie(fn.serieDefFromString("0.5+0.1x2")), [0.5, 0.6, 0.7], "Decimal series 0.5+0.1x2");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("1 2 3")), [1, 2, 3], "Series '1 2 3'");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("1+1x2 4 5")), [1, 2, 3, 4, 5], "Combine '1+1x2' and '4 5'");
             assertEqual(fn.makeSerie(fn.serieDefFromString("3+0x2 4+0x2")), [3, 3, 3, 4, 4, 4], "Series of fixed values  3 3 3 4 4 4");
         }
 
