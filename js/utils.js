@@ -53,7 +53,7 @@ export const fn = {
       } else if (numericLiteralRegex.test(p)) {
         seriesSpec.push({ initial: parseFloat(p),  increment: 0, steps: 0 }); // Single number
       } else {
-        console.warn(`Unrecognized segment: ${p}. Treating as a single literal string.`);
+        console.warn(`Unrecognized segment: ${p} in definition ${definition}. Treating as a single literal string.`);
         seriesSpec.push({ initial: p, type: 'special_single' }); // Treat unknown as single special
       }
     }

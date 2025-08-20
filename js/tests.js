@@ -115,29 +115,47 @@ export const runUnitTests = function() {
 
         function testSerieDefFromString() {
             console.log("\n-- Testing fn.serieDefFromString --");
+            assertEqual(fn.serieDefFromString("1"), [{ initial: "1", steps: 0 }], "Single number");
+            assertEqual(fn.serieDefFromString("1 1"), [{ initial: "1", steps: 0 }, { initial: "1", steps: 0 }], "Single number");
             assertEqual(fn.serieDefFromString("1+1x2"), [{ initial: 1, increment: 1, steps: 2}], "Simple positive increment");
+            assertEqual(fn.serieDefFromString("1+1x2 1"), [{ initial: 1, increment: 1, steps: 2}, { initial: 1, steps: 0 }], "Simple positive increment");
+            assertEqual(fn.serieDefFromString("1+0x2"), [{ initial: 1, increment: 0, steps: 2}], "Simple positive increment");
             assertEqual(fn.serieDefFromString("-2+4x3"), [{ initial: -2, increment: 4, steps: 3}], "Negative initial, positive increment");
             assertEqual(fn.serieDefFromString("1-2x4"), [{ initial: 1, increment: -2, steps: 4}], "Positive initial, negative increment (via minus)");
             assertEqual(fn.serieDefFromString("1x4"), [{ initial: 1, increment: 0, steps: 4}], "Shorthand 'axn'");
             assertEqual(fn.serieDefFromString("#+1x1"), [{ initial: "#", increment: 1, steps: 1}], "Continue series '#'");
             assertEqual(fn.serieDefFromString("#x2"), [{ initial: "#", increment: 0, steps: 2}], "Continue series shorthand '#xn'");
-            assertEqual(fn.serieDefFromString("_"), [{ initial: "_", increment: '_' }], "Single underscore");
+            assertEqual(fn.serieDefFromString("_"), [{ initial: "_", steps: 0 }], "Single underscore");
+            assertEqual(fn.serieDefFromString("_ 1"), [{ initial: "_", steps: 0 }, { initial: 1, steps: 0 }], "Single underscore followed by a number");
             assertEqual(fn.serieDefFromString("_x3"), [{ initial: "_", increment: '_', steps: 3 }], "Underscore repeat '_xn'");
+            assertEqual(fn.serieDefFromString("_x3 1"), [{ initial: "_", increment: '_', steps: 3 }, { initial: 1, steps: 0 }], "Underscore repeat '_xn' followed by a number");
             assertEqual(fn.serieDefFromString("0.5+0.1x2"), [{ initial: 0.5, increment: 0.1, steps: 2}], "Decimal values");
         }
 
         function testMakeSerie() {
             console.log("\n-- Testing fn.makeSerie --");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("1")), [1], "Series '1'");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("1 2 3")), [1, 2, 3], "Series '1 2 3'");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("1x4")), [1, 1, 1, 1, 1], "Series 1x4 (1 then 4 more 1s)");
             assertEqual(fn.makeSerie(fn.serieDefFromString("1+1x2")), [1, 2, 3], "Simple series 1+1x2"); // 1, then 2 further steps
+            assertEqual(fn.makeSerie(fn.serieDefFromString("1+0x2")), [1, 1, 1], "Simple series 1+0x2"); // 1, then 2 further steps
+            assertEqual(fn.makeSerie(fn.serieDefFromString("1 1+1x2")), [1, 1, 2, 3], "Simple series 1 1+1x2"); // 1, then 2 further steps
+            assertEqual(fn.makeSerie(fn.serieDefFromString("1 2-1x2")), [1, 2, 1, 0], "Simple series 1 2-1x2"); // 1, then 2 further steps
             assertEqual(fn.makeSerie(fn.serieDefFromString("-2+4x3")), [-2, 2, 6, 10], "Series -2+4x3");
             assertEqual(fn.makeSerie(fn.serieDefFromString("1-2x4")), [1, -1, -3, -5, -7], "Series 1-2x4");
-            assertEqual(fn.makeSerie(fn.serieDefFromString("1x4")), [1, 1, 1, 1, 1], "Series 1x4 (1 then 4 more 1s)");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_")), ['_'], "Series '_'");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_ _")), ['_','_'], "Series '_ _'");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_ 1")), ['_','1'], "Series '_ 1'");
             assertEqual(fn.makeSerie(fn.serieDefFromString("_x4")), ['_', '_', '_', '_', '_'], "Series _x4 (_ then 4 more _s)");
-            assertEqual(fn.makeSerie(fn.serieDefFromString("#+1x1")), [0, 1], "Series starting with # (defaults to 0)"); // Assuming # defaults to 0 if no prior
-          //assertEqual(fn.makeSerie(fn.serieDefFromString("5 #+1x1")), [5, 5, 6], "Series with # after a number");
-          //assertEqual(fn.makeSerie(fn.serieDefFromString("1 _ #+1x1")), [1, "_", 0, 1], "Series with # after special (defaults to 0)");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_x2 1 2")), ['_', '_', '1', '2'], "Series _x2 1 2");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("5 #+1x1")), [5, 6, 7], "Series with # after a number");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("5 #+0x1")), [5, 5, 5], "Series with # after a number");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_ #+1x1")), ['_', 1, 2], "Series with # after a number");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_ #+0x1")), ['_', 0, 0], "Series with # after a number");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_ #+1x1 #+1x1")), ['_', 1, 2, 3, 4], "Series with # after a number");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_ #+2x1 #+3x1")), ['_', 2, 4, 7, 10], "Series with # after a number");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("1 _ #+1x1")), [1, "_", 1, 2], "Series with # after special (defaults to 0)");
             assertEqual(fn.makeSerie(fn.serieDefFromString("0.5+0.1x2")), [0.5, 0.6, 0.7], "Decimal series 0.5+0.1x2");
-            assertEqual(fn.makeSerie(fn.serieDefFromString("1 2 3")), [1, 2, 3], "Series '1 2 3'");
             assertEqual(fn.makeSerie(fn.serieDefFromString("1+1x2 4 5")), [1, 2, 3, 4, 5], "Combine '1+1x2' and '4 5'");
             assertEqual(fn.makeSerie(fn.serieDefFromString("3+0x2 4+0x2")), [3, 3, 3, 4, 4, 4], "Series of fixed values  3 3 3 4 4 4");
         }
