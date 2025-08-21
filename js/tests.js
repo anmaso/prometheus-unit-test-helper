@@ -62,6 +62,7 @@ export const runUnitTests = function() {
             assertEqual(fn.serieDefFromString("_x3"), [{ initial: "_", increment: '_', steps: 3 }], "Underscore repeat '_xn'");
             assertEqual(fn.serieDefFromString("_x3 1"), [{ initial: "_", increment: '_', steps: 3 }, { initial: 1, increment: 0, steps: 0 }], "Underscore repeat '_xn' followed by a number");
             assertEqual(fn.serieDefFromString("0.5+0.1x2"), [{ initial: 0.5, increment: 0.1, steps: 2}], "Decimal values");
+            assertEqual(fn.serieDefFromString("10+1x10 #+3x10"), [{ initial: 10, increment: 1, steps: 10}, { initial: '#', increment: 3, steps: 10}], "continue series with #");
         }
 
         function testMakeSerie() {
@@ -236,9 +237,19 @@ export const runUnitTests = function() {
         function testExpandSeriesDefinition() {
             console.log("\n-- Testing fn.expandSeriesDefinition --");
             assertEqual(fn.expandSeriesDefinition("1+1x2"), "1+1x2", "Simple expansion");
-            assertEqual(fn.expandSeriesDefinition("5 #+2x3"), "5 5+2x3", "Expansion with continuation");
-            assertEqual(fn.expandSeriesDefinition("1+1x2 #+3x2"), "1+1x2 3+3x2", "Multiple expansions");
+            assertEqual(fn.expandSeriesDefinition("5 #+2x3"), "5 7+2x3", "Expansion with continuation");
+            assertEqual(fn.expandSeriesDefinition("1+1x2 #+3x2"), "1+1x2 6+3x2", "Multiple expansions");
             assertEqual(fn.expandSeriesDefinition("_ 1+1x2"), "_ 1+1x2", "Expansion with special values");
+            assertEqual(fn.expandSeriesDefinition("10+1x10 #"), "10+1x10 20", "User example: continuation after 10+1x10");
+            assertEqual(fn.expandSeriesDefinition("10+1x10 #+0x10"), "10+1x10 20+0x10", "User example: continuation after 10+1x10");
+            assertEqual(fn.expandSeriesDefinition("10+1x10 #+3x10"), "10+1x10 23+3x10", "User example: continuation after 10+1x10");
+            
+            // Additional tests for expandSeriesDefinition
+            assertEqual(fn.expandSeriesDefinition("0+5x4 #+2x3"), "0+5x4 22+2x3", "Expansion from 0 with continuation");
+            assertEqual(fn.expandSeriesDefinition("100"), "100", "Single value expansion");
+            assertEqual(fn.expandSeriesDefinition("50 #"), "50 50", "Single continuation marker");
+            assertEqual(fn.expandSeriesDefinition("10+2x5 # #+1x3"), "10+2x5 20 21+1x3", "Multiple continuation patterns");
+            assertEqual(fn.expandSeriesDefinition("_x3 #+5x2"), "_x3 5+5x2", "Special values with continuation");
         }
 
         function testPrometheusAlertingPatterns() {

@@ -271,12 +271,16 @@ export const fn = {
     spec.forEach((s) => {
       let initialValue;
       if (s.initial === "#") {
-        initialValue = lastValue;
+        initialValue = s.steps > 0 ? lastValue + (s.increment || 0) : lastValue;
       } else if (typeof s.initial === 'number') {
         initialValue = s.initial;
       } else {
-        // For special values like '_', keep them as is
-        expandedParts.push(s.initial);
+        if (s.initial === '_' && s.steps > 0) {
+          expandedParts.push(`_x${s.steps}`);
+        } else {
+          expandedParts.push(s.initial);
+        }
+        lastValue = 0;
         return;
       }
 
