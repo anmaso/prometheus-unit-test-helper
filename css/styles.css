@@ -94,7 +94,7 @@ canvas {
   border-radius: 5px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.5);
   width: 80%;
-  max-width: 700px; /* Max width for readability */
+  max-width: 80%; /* Max width for readability */
   max-height: 80vh; /* Max height */
   overflow-y: auto; /* Scroll if content overflows */
   position: relative; /* For positioning the close button */

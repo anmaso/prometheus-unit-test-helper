@@ -38,38 +38,39 @@
         <option value="proportionRateOverN">Proportion Rate over N</option>
         <option value="countOverN">Count over N</option>
       </select>
-      <br/> <!-- Added line break for better spacing -->
+      <br/>
       <span class="alert alert1"></span>
       alert 1 window 
       <input v-model="short" size="5" />
       threshold
       <input v-model="threshold1" size="6" />
-      <br/> <!-- Added line break for better spacing in narrower panel -->
+      <br/> 
       <span class="alert alert2"></span>
       alert 2 window 
       <input v-model="long" size="5" />
       threshold <input v-model="threshold2" size="6" />
-      <br/> <!-- Added line break for better spacing -->
-      <button @click="toggleHelpModal()">Help</button>
-      <br/> <!-- Added line break for better spacing -->
+      <br/> 
       <input type="checkbox" id="highlightToggleCheckbox" v-model="highlightEnabled" />
       <label for="highlightToggleCheckbox" style="cursor: pointer;">Highlight alert</label>
-      <br/> <!-- Added line break for better spacing -->
+      <br/> 
+      <input type="checkbox" id="showSeriesValuesCheckbox" v-model="showSeriesValues" />
+      <label for="showSeriesValuesCheckbox" style="cursor: pointer;">Show series values</label>
+      <br/>
+      <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" />
+      <label for="showTimeFormatCheckbox" style="cursor: pointer;">Show time format</label>
+      <br/>
+      <label for="intervalInput" style="margin-right: 10px;">Interval:</label>
+      <input id="intervalInput" v-model="interval" size="5" placeholder="1m" />
+      <small style="margin-left: 5px; color: #B4B7C0;">Time between samples (e.g., 1m, 5m, 1h, 30s). It only affects the graph x labels</small>
+      <br/>
       <input type="checkbox" id="debounceToggleCheckbox" v-model="debounceEnabled" />
       <label for="debounceToggleCheckbox" style="cursor: pointer;">Debounce alert</label>
       <label for="debounceTimeInput" style="margin-left: 10px;">window </label>
       <input id="debounceTimeInput" v-model="debounceTime" size="3" min="0" />
-      <br/> <!-- Added line break for better spacing -->
-      <input type="checkbox" id="showSeriesValuesCheckbox" v-model="showSeriesValues" />
-      <label for="showSeriesValuesCheckbox" style="cursor: pointer;">Show series values</label>
-      <br/> <!-- Added line break for better spacing -->
-      <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" />
-      <label for="showTimeFormatCheckbox" style="cursor: pointer;">Show time format</label>
-      <br/> <!-- Added line break for better spacing -->
-      <label for="intervalInput" style="margin-right: 10px;">Interval:</label>
-      <input id="intervalInput" v-model="interval" size="5" placeholder="1m" />
-      <small style="margin-left: 5px; color: #B4B7C0;">Time between samples (e.g., 1m, 5m, 1h, 30s)</small>
 
+      <br/> 
+      <br/> 
+      <button @click="toggleHelpModal()">Help</button>
       <!-- Help Modal -->
       <div v-if="showHelpModal" class="modal-overlay" @click.self="toggleHelpModal()">
         <div class="modal-content">
@@ -79,12 +80,22 @@
 
           <h4>Input Fields:</h4>
           <ul>
-            <li><strong>Bad/Good Events:</strong> Define event series using a prometheus alert format. Each segment is <code>[initial]+[increment]x[steps]</code>.
+            <li><strong><span class="good_events">Good</span>/<span class="bad_events">Bad</span> Events:</strong> Define event series using a prometheus alert format. 
               <ul>
+                <li><code>segment</code>: A segment is defined by <code>[initial]+[increment]x[steps]</code>. 
+                  <ul>
+
                 <li><code>initial</code>: The starting value for this segment. Use <code>#</code> to use the last value from the previous segment.</li>
                 <li><code>increment</code>: The value to add at each step within this segment.</li>
                 <li><code>steps</code>: The number of data points in this segment.</li>
-                <li>Example: <code>0+0x60 150+150x10 #+0x60</code> creates a series starting at 0 for 60 steps, then jumps to 150 and increments by 150 for 10 steps, then continues from the last value with 0 increment for 60 steps.</li>
+                  </ul></li>
+                <li>Example: <code>0+0x10 10+1x10 #+3x10</code> 
+                  <ul>
+                    <li>starts at 0, and repeats 0 for 10 steps</li>
+                    <li>then jumps to 10 and increments by 1 for another 10 steps</li>
+                    <li>by using <code>#</code> we use the last value from the previous segment (20) as the initial value for the next segment</li>
+                    <li>then continues from the last value with 3 increment for 10 steps</li>
+                  </ul>
               </ul>
             </li>
             <li><strong>Threshold 1 & 2:</strong> These are the threshold values for <code>alert1</code> and <code>alert2</code> series respectively.
@@ -168,7 +179,7 @@
           </div>
           <div v-for="(value, index) in step_values.good_values" :key="'good-' + index" class="series-item">
             <span class="index">{{index}}:</span>
-            <span v-if="showTimeFormat" class="time-column">{{fn.stepToTimeString(index, interval)}}</span>
+            <span v-if="showTimeFormat" class="time-column">{{timeStrings[index]}}</span>
             <span class="value">{{value}}</span>
             <span class="value bad_events">{{step_values.bad_values[index]}}</span>
             <span class="value">{{step_values.rate_good[index]}}</span>

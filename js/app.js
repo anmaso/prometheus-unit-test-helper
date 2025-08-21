@@ -94,6 +94,14 @@ export function createApp() {
         return fn.stepToTimeString(totalSteps, interval.value);
       });
 
+      // Computed property for time strings to ensure reactivity when interval changes
+      const timeStrings = Vue.computed(() => {
+        if (!step_values.value.good_values) return [];
+        return step_values.value.good_values.map((_, index) => 
+          fn.stepToTimeString(index, interval.value)
+        );
+      });
+
       // Function to update chart data
       const updateChartData = () => {
         const def_bad = fn.serieDefFromString(bad.value);
@@ -221,6 +229,7 @@ export function createApp() {
         showSeriesValues,
         showTimeFormat,
         interval,
+        timeStrings, // Computed time strings for reactivity
         expandedBad,
         expandedGood,
         copyToClipboard,
