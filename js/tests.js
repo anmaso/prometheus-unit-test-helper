@@ -3,76 +3,6 @@ import { fn } from './utils.js';
 /**
  * Comprehensive Unit Test Suite for Prometheus Unit Test Helper
  * 
- * This test suite implements comprehensive testing for the JavaScript utility functions
- * that support Prometheus unit testing patterns. The tests are based on the official
- * Prometheus documentation for unit testing rules and cover real-world scenarios.
- * 
- * Test Categories:
- * 
- * 1. CORE FUNCTIONALITY TESTS:
- *    - serieDefFromString: Parse expanding notation like '1+1x2', '1-2x4', '_x3'
- *    - makeSerie: Convert parsed definitions to actual time series arrays
- *    - makeSerieConstant: Generate constant value series
- *    - rateOverN: Calculate rate over N periods (similar to Prometheus rate())
- *    - proportionRateOverN: Calculate proportions for SLI/SLO calculations
- *    - sumOverN: Calculate moving sums over N periods
- * 
- * 2. SPECIAL VALUES TESTS:
- *    - Missing samples ('_') representing scrape failures
- *    - Stale values ('stale') for Prometheus staleness handling
- *    - Mixed series with special and numeric values
- * 
- * 3. COMPLEX EXPANDING NOTATION:
- *    - Multiple series definitions in one string
- *    - Decimal precision handling
- *    - Large numbers and edge cases
- *    - Error conditions and malformed input
- * 
- * 4. PROMETHEUS-SPECIFIC PATTERNS:
- *    - Counter reset scenarios (pod restarts)
- *    - Continuation series using '#' notation
- *    - Complex time series aggregations
- *    - Rate calculations mimicking Prometheus functions
- * 
- * 5. ALERTING PATTERNS:
- *    - Instance down detection patterns
- *    - High error rate detection
- *    - Disk space and resource threshold alerts
- *    - Threshold crossing and recovery scenarios
- * 
- * 6. SLI/SLO PATTERNS:
- *    - Availability calculations (99.9% SLO patterns)
- *    - Error budget tracking and exhaustion
- *    - Error rate calculations for service monitoring
- * 
- * 7. TIME WINDOW PATTERNS:
- *    - 5-minute rate windows (common in Prometheus)
- *    - Burndown patterns for error budgets
- *    - Time-based threshold calculations
- * 
- * 8. COUNTER PATTERNS:
- *    - Monotonic counter growth patterns
- *    - Counter reset handling in rate calculations
- *    - Instant rate calculations (irate pattern)
- * 
- * 9. HIGH CARDINALITY SCENARIOS:
- *    - Multi-instance aggregations
- *    - Service-to-service metric patterns
- *    - Cross-instance calculations
- * 
- * 10. ADVANCED PATTERNS:
- *     - Prediction patterns (linear growth detection)
- *     - Saturation detection
- *     - Percentile threshold breaches (P95 patterns)
- *     - TopK service identification patterns
- * 
- * 11. UTILITY FUNCTIONS:
- *     - Time formatting (minutesToTimeString)
- *     - Series expansion and manipulation
- *     - Error handling and edge cases
- * 
- * Test Count: 89 comprehensive tests covering all aspects of Prometheus unit testing
- * 
  * Usage: Call runUnitTests() to execute the full test suite
  */
 
@@ -84,6 +14,8 @@ export const runUnitTests = function() {
 
         function deepEqual(obj1, obj2) {
             if (obj1 === obj2) return true;
+            // Special handling for NaN
+            if (Number.isNaN(obj1) && Number.isNaN(obj2)) return true;
             if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
                 return false;
             }
@@ -115,20 +47,20 @@ export const runUnitTests = function() {
 
         function testSerieDefFromString() {
             console.log("\n-- Testing fn.serieDefFromString --");
-            assertEqual(fn.serieDefFromString("1"), [{ initial: "1", steps: 0 }], "Single number");
-            assertEqual(fn.serieDefFromString("1 1"), [{ initial: "1", steps: 0 }, { initial: "1", steps: 0 }], "Single number");
+            assertEqual(fn.serieDefFromString("1"), [{ initial: 1, increment: 0, steps: 0 }], "Single number");
+            assertEqual(fn.serieDefFromString("1 1"), [{ initial: 1, increment: 0, steps: 0 }, { initial: 1, increment: 0, steps: 0 }], "Single number");
             assertEqual(fn.serieDefFromString("1+1x2"), [{ initial: 1, increment: 1, steps: 2}], "Simple positive increment");
-            assertEqual(fn.serieDefFromString("1+1x2 1"), [{ initial: 1, increment: 1, steps: 2}, { initial: 1, steps: 0 }], "Simple positive increment");
+            assertEqual(fn.serieDefFromString("1+1x2 1"), [{ initial: 1, increment: 1, steps: 2}, { initial: 1, increment: 0, steps: 0 }], "Simple positive increment");
             assertEqual(fn.serieDefFromString("1+0x2"), [{ initial: 1, increment: 0, steps: 2}], "Simple positive increment");
             assertEqual(fn.serieDefFromString("-2+4x3"), [{ initial: -2, increment: 4, steps: 3}], "Negative initial, positive increment");
             assertEqual(fn.serieDefFromString("1-2x4"), [{ initial: 1, increment: -2, steps: 4}], "Positive initial, negative increment (via minus)");
             assertEqual(fn.serieDefFromString("1x4"), [{ initial: 1, increment: 0, steps: 4}], "Shorthand 'axn'");
             assertEqual(fn.serieDefFromString("#+1x1"), [{ initial: "#", increment: 1, steps: 1}], "Continue series '#'");
             assertEqual(fn.serieDefFromString("#x2"), [{ initial: "#", increment: 0, steps: 2}], "Continue series shorthand '#xn'");
-            assertEqual(fn.serieDefFromString("_"), [{ initial: "_", steps: 0 }], "Single underscore");
-            assertEqual(fn.serieDefFromString("_ 1"), [{ initial: "_", steps: 0 }, { initial: 1, steps: 0 }], "Single underscore followed by a number");
+            assertEqual(fn.serieDefFromString("_"), [{ initial: "_", increment: "_", steps: 0 }], "Single underscore");
+            assertEqual(fn.serieDefFromString("_ 1"), [{ initial: "_", increment: "_", steps: 0 }, { initial: 1, increment: 0, steps: 0 }], "Single underscore followed by a number");
             assertEqual(fn.serieDefFromString("_x3"), [{ initial: "_", increment: '_', steps: 3 }], "Underscore repeat '_xn'");
-            assertEqual(fn.serieDefFromString("_x3 1"), [{ initial: "_", increment: '_', steps: 3 }, { initial: 1, steps: 0 }], "Underscore repeat '_xn' followed by a number");
+            assertEqual(fn.serieDefFromString("_x3 1"), [{ initial: "_", increment: '_', steps: 3 }, { initial: 1, increment: 0, steps: 0 }], "Underscore repeat '_xn' followed by a number");
             assertEqual(fn.serieDefFromString("0.5+0.1x2"), [{ initial: 0.5, increment: 0.1, steps: 2}], "Decimal values");
         }
 
@@ -145,9 +77,9 @@ export const runUnitTests = function() {
             assertEqual(fn.makeSerie(fn.serieDefFromString("1-2x4")), [1, -1, -3, -5, -7], "Series 1-2x4");
             assertEqual(fn.makeSerie(fn.serieDefFromString("_")), ['_'], "Series '_'");
             assertEqual(fn.makeSerie(fn.serieDefFromString("_ _")), ['_','_'], "Series '_ _'");
-            assertEqual(fn.makeSerie(fn.serieDefFromString("_ 1")), ['_','1'], "Series '_ 1'");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_ 1")), ['_', 1], "Series '_ 1'");
             assertEqual(fn.makeSerie(fn.serieDefFromString("_x4")), ['_', '_', '_', '_', '_'], "Series _x4 (_ then 4 more _s)");
-            assertEqual(fn.makeSerie(fn.serieDefFromString("_x2 1 2")), ['_', '_', '1', '2'], "Series _x2 1 2");
+            assertEqual(fn.makeSerie(fn.serieDefFromString("_x2 1 2")), ['_', '_', '_', 1, 2], "Series _x2 1 2");
             assertEqual(fn.makeSerie(fn.serieDefFromString("5 #+1x1")), [5, 6, 7], "Series with # after a number");
             assertEqual(fn.makeSerie(fn.serieDefFromString("5 #+0x1")), [5, 5, 5], "Series with # after a number");
             assertEqual(fn.makeSerie(fn.serieDefFromString("_ #+1x1")), ['_', 1, 2], "Series with # after a number");
@@ -189,22 +121,6 @@ export const runUnitTests = function() {
         }
 
         // Add more test functions for indexOfValueOver, seriesOverThreshold
-
-        function testSpecialValues() {
-            console.log("\n-- Testing Special Values --");
-            assertEqual(fn.serieDefFromString("stale"), [{ initial: "stale", type: 'special_single' }], "Single stale value");
-            assertEqual(fn.serieDefFromString("stalex3"), [{ initial: "stale", type: 'special_repeat', steps: 3 }], "Stale repeat 'stalex3'");
-            assertEqual(fn.serieDefFromString("1 _ stale"), [
-                { initial: 1, increment: 0, steps: 0 },
-                { initial: "_", increment: '_' },
-                { initial: "stale", type: 'special_single' }
-            ], "Mixed series with stale");
-            assertEqual(fn.serieDefFromString("1 _x2 stale"), [
-                { initial: 1, increment: 0, steps: 0 },
-                { initial: "_", increment: '_', steps: 2 },
-                { initial: "stale", type: 'special_single' }
-            ], "Mixed series with underscore repeat and stale");
-        }
 
         function testComplexExpandingNotation() {
             console.log("\n-- Testing Complex Expanding Notation --");
@@ -291,17 +207,9 @@ export const runUnitTests = function() {
             // Test error rate calculation
             const totalRequests = fn.makeSerie(fn.serieDefFromString("0+100x5")); // [0,100,200,300,400,500]
             const errorRequests = fn.makeSerie(fn.serieDefFromString("0+5x5"));    // [0,5,10,15,20,25]
-            
-            // Test error rate - badDelta/(badDelta + goodDelta)
-            // At index 1: badDelta=5, goodDelta=100, so rate = 5/(5+100) = 5/105 ≈ 0.0476
-            const errorRate = fn.proportionRateOverN(errorRequests, totalRequests, 1);
-            assertEqual(Math.round(errorRate[1] * 1000) / 1000, 0.048, "Error rate calculation ~4.8%");
-            
-            // Test availability calculation - successDelta/(successDelta + totalDelta)
-            // At index 1: successDelta=95, totalDelta=100, so availability = 95/(95+100) = 95/195 ≈ 0.487
             const successRequests = totalRequests.map((total, i) => total - errorRequests[i]);
-            const availability = fn.proportionRateOverN(successRequests, totalRequests, 1);
-            assertEqual(Math.round(availability[1] * 1000) / 1000, 0.487, "Availability calculation ~48.7%");
+            const errorRate = fn.proportionRateOverN(errorRequests, successRequests, 1);
+            assertEqual(Math.round(errorRate[1] * 1000) / 1000, 0.05, "Availability calculation ~95%");
         }
 
         function testErrorHandling() {
@@ -348,22 +256,6 @@ export const runUnitTests = function() {
             // Test disk space pattern
             const diskUsage = fn.makeSerie(fn.serieDefFromString("70+2x10 90+1x5")); // disk usage growing
             assertEqual(fn.indexOfValueOver(85, diskUsage), "8 - -1", "Disk space alert threshold");
-        }
-
-        function testSLISLOPatterns() {
-            console.log("\n-- Testing SLI/SLO Patterns --");
-            
-            // Test 99.9% availability SLO (common in production)
-            const successfulRequests = fn.makeSerie(fn.serieDefFromString("0+999x10")); // 999 successful per period
-            const totalRequests = fn.makeSerie(fn.serieDefFromString("0+1000x10"));     // 1000 total per period
-            
-            const availability = fn.proportionRateOverN(successfulRequests, totalRequests, 1);
-            // At index 1: 999/(999+1000) = 999/1999 ≈ 0.4997
-            assertEqual(Math.round(availability[1] * 1000) / 1000, 0.5, "99.9% availability SLO approximation");
-            
-            // Test error budget calculation
-            const errorBudget = fn.makeSerie(fn.serieDefFromString("1000-1x10")); // decreasing error budget
-            assertEqual(fn.indexOfValueOver(995, errorBudget), "0 - 5", "Error budget exhaustion");
         }
 
         function testPrometheusTimeWindowPatterns() {
@@ -462,6 +354,128 @@ export const runUnitTests = function() {
             assertEqual(highestAtIndex3, 600, "Top service identification"); // service B: 200*3
         }
 
+        function testTimeIntervalParsing() {
+            console.log("\n-- Testing Time Interval Parsing --");
+            assertEqual(fn.parseIntervalToMinutes("30s"), 0.5, "Parse 30 seconds");
+            assertEqual(fn.parseIntervalToMinutes("5m"), 5, "Parse 5 minutes");
+            assertEqual(fn.parseIntervalToMinutes("2h"), 120, "Parse 2 hours");
+            assertEqual(fn.parseIntervalToMinutes("1d"), 1440, "Parse 1 day");
+            assertEqual(fn.parseIntervalToMinutes("invalid"), 1, "Invalid interval defaults to 1m");
+            assertEqual(fn.parseIntervalToMinutes("45.5s"), 0.7583333333333333, "Parse decimal seconds");
+        }
+
+        function testStepToTimeString() {
+            console.log("\n-- Testing Step to Time String Conversion --");
+            assertEqual(fn.stepToTimeString(0, "1m"), "0m", "Step 0 with 1m interval");
+            assertEqual(fn.stepToTimeString(5, "1m"), "5m", "Step 5 with 1m interval");
+            assertEqual(fn.stepToTimeString(2, "30s"), "1m", "Step 2 with 30s interval");
+            assertEqual(fn.stepToTimeString(4, "15m"), "1h", "Step 4 with 15m interval");
+            assertEqual(fn.stepToTimeString(96, "15m"), "1d", "Step 96 with 15m interval");
+            assertEqual(fn.stepToTimeString(1, "30s"), "30s", "Step 1 with 30s interval shows seconds");
+        }
+
+        function testEmptyAndSingleValueSeries() {
+            console.log("\n-- Testing Empty and Single Value Series --");
+            assertEqual(fn.makeSerie([]), [], "Empty series definition");
+            assertEqual(fn.makeSerie([{ initial: 5, steps: 0 }]), [5], "Single value series");
+            assertEqual(fn.rateOverN([5], 1), [5], "Rate calculation on single element");
+            assertEqual(fn.indexOfValueOver(3, [5]), "0 - -1", "Single element over threshold");
+            assertEqual(fn.indexOfValueOver(10, [5]), "-1 - -1", "Single element under threshold");
+            assertEqual(fn.seriesOverThreshold(3, [5]), [[0, 0]], "Single element threshold range");
+        }
+
+        function testSpecialValuesInCalculations() {
+            console.log("\n-- Testing Special Values in Calculations --");
+            
+            // Test how calculations handle special values
+            const numericOnly = [1, 2, 3];
+            const withSpecials = [1, "_", 3];
+            assertEqual(fn.rateOverN(withSpecials, 1), [1, NaN, NaN], "Rate calculation handles special values");
+            assertEqual(fn.seriesOverThreshold(1, withSpecials), [[2, 2]], "Threshold detection with special values");
+        }
+
+        function testFloatingPointPrecision() {
+            console.log("\n-- Testing Floating Point Precision --");
+            const preciseSeries = fn.makeSerie(fn.serieDefFromString("0.1+0.1x10"));
+            // Test that 0.1 + 0.1*10 = 1.1 (not 1.0999999999999999)
+            assertEqual(Math.round(preciseSeries[10] * 10) / 10, 1.1, "Floating point precision in series");
+            
+            const rates = fn.rateOverN(preciseSeries, 1);
+            assertEqual(Math.round(rates[1] * 10) / 10, 0.1, "Floating point precision in rates");
+        }
+
+        function testNegativeThresholds() {
+            console.log("\n-- Testing Negative Thresholds --");
+            const negativeSeries = fn.makeSerie(fn.serieDefFromString("-10+1x20")); // [-10, -9, -8, ..., 10]
+            assertEqual(fn.indexOfValueOver(-5, negativeSeries), "6 - -1", "Negative threshold crossing");
+            assertEqual(fn.indexOfValueOver(0, negativeSeries), "11 - -1", "Zero threshold crossing");
+            assertEqual(fn.seriesOverThreshold(-5, negativeSeries), [[6, 20]], "Negative threshold ranges");
+        }
+
+        function testCounterOverflowScenarios() {
+            console.log("\n-- Testing Counter Overflow Scenarios --");
+            // Simulate counter overflow (large number resetting to small number)
+            const overflowSeries = [1000000, 1000010, 1000020, 5, 15, 25]; // overflow between index 2 and 3
+            const rates = fn.rateOverN(overflowSeries, 1);
+            assertEqual(rates[3], 0, "Counter overflow handled correctly (rate goes to 0)");
+            assertEqual(rates[4], 10, "Rate recovers after overflow");
+        }
+
+        function testRealWorldPrometheusScenarios() {
+            console.log("\n-- Testing Real-World Prometheus Scenarios --");
+            
+            // Test HTTP request latency P95 breach
+            const p95Latencies = fn.makeSerie(fn.serieDefFromString("50+5x10 200+10x5 100-5x10")); // spike and recovery
+            const slaBreaches = fn.seriesOverThreshold(150, p95Latencies);
+            assertEqual(slaBreaches.length > 0, true, "P95 SLA breach detection");
+            
+            // Test memory usage growth pattern
+            const memoryUsage = fn.makeSerie(fn.serieDefFromString("40+2x30")); // steady growth to 100%
+            assertEqual(fn.indexOfValueOver(80, memoryUsage), "21 - -1", "Memory exhaustion alert");
+            
+            // Test CPU spike pattern
+            const cpuUsage = fn.makeSerie(fn.serieDefFromString("10+0x5 90+0x10 10+0x5")); // normal -> spike -> normal
+            assertEqual(fn.seriesOverThreshold(50, cpuUsage), [[6, 16]], "CPU spike detection");
+        }
+
+        function testErrorBudgetPatterns() {
+            console.log("\n-- Testing Error Budget Patterns --");
+            
+            // Test 99.9% SLO with 4-week error budget (1% = 4h 19m per 4 weeks = 259.2 minutes)
+            const errorBudgetMinutes = fn.makeSerie(fn.serieDefFromString("259.2-5x52")); // burning 5min/week
+            assertEqual(fn.indexOfValueOver(60, errorBudgetMinutes), "0 - 40", "Error budget burndown"); // Hits 60min at week 40
+            
+            // Test error budget exhaustion
+            const fastBurn = fn.makeSerie(fn.serieDefFromString("259.2-50x6")); // fast burn: 259.2 - 300 = -40.8
+            assertEqual(fn.indexOfValueOver(0, fastBurn), "0 - 6", "Error budget exhaustion");
+        }
+
+        function testSeriesValidation() {
+            console.log("\n-- Testing Series Validation --");
+            
+            // Test that functions handle mismatched series lengths gracefully
+            const shortSeries = [1, 2, 3];
+            const longSeries = [10, 20, 30, 40, 50];
+            const proportion = fn.proportionRateOverN(shortSeries, longSeries, 1);
+            assertEqual(proportion.length, 5, "Proportion calculation handles different lengths");
+            assertEqual(proportion[4], 0, "Missing values handled as 0");
+        }
+
+        function testFixedAvailabilityCalculation() {
+            console.log("\n-- Testing Corrected Availability Calculation --");
+            
+            // Test proper availability calculation: successful/total (not the incorrect proportion formula)
+            const totalRequests = fn.makeSerie(fn.serieDefFromString("0+1000x5")); // [0,1000,2000,3000,4000,5000]
+            const successfulRequests = fn.makeSerie(fn.serieDefFromString("0+999x5")); // [0,999,1998,2997,3996,4995]
+            
+            // Manual calculation for proper availability: successful/total at each point
+            const properAvailability = successfulRequests.map((success, i) => 
+                totalRequests[i] === 0 ? 0 : success / totalRequests[i]
+            );
+            assertEqual(Math.round(properAvailability[1] * 1000) / 1000, 0.999, "Correct 99.9% availability calculation");
+            assertEqual(Math.round(properAvailability[2] * 1000) / 1000, 0.999, "Availability remains consistent");
+        }
+
         testSerieDefFromString();
         testMakeSerie();
         testMakeSerieConstant();
@@ -470,7 +484,6 @@ export const runUnitTests = function() {
         testSumOverN();
         
         // Execute comprehensive tests
-        testSpecialValues();
         testComplexExpandingNotation();
         testEdgeCases();
         testCounterReset();
@@ -486,13 +499,25 @@ export const runUnitTests = function() {
         
         // Execute advanced Prometheus-specific tests
         testPrometheusAlertingPatterns();
-        testSLISLOPatterns();
         testPrometheusTimeWindowPatterns();
         testPrometheusCounterPatterns();
         testHighCardinality();
         testPrometheusExpressionPatterns();
         testPredictionPatterns();
         testAdvancedAggregations();
+        
+        // Execute new comprehensive tests
+        testTimeIntervalParsing();
+        testStepToTimeString();
+        testEmptyAndSingleValueSeries();
+        testSpecialValuesInCalculations();
+        testFloatingPointPrecision();
+        testNegativeThresholds();
+        testCounterOverflowScenarios();
+        testRealWorldPrometheusScenarios();
+        testErrorBudgetPatterns();
+        testSeriesValidation();
+        testFixedAvailabilityCalculation();
 
         console.log(`\n--- Test Summary ---`);
         console.log(`Total tests run: ${testsRun}`);

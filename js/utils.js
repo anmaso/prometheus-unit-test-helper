@@ -9,7 +9,7 @@ export const fn = {
     const opRegex = /^([#]|-?\d*\.?\d+)([+-])(\d*\.?\d+)x(\d+)$/;
 
     // Regex for initialValue, stepsValue (for numeric shorthand or special repeats)
-    // Examples: 1x4 (numeric), _x3 (special), stalex3 (special), #x2 (numeric repeat)
+    // Examples: 1x4 (numeric), _x3 (special),  #x2 (numeric repeat)
     const repeatRegex = /^([#\w_.-]+)x(\d+)$/;
 
     const numericLiteralRegex = /^[+-]?\d+(\.\d+)?$/;
@@ -29,7 +29,7 @@ export const fn = {
           steps: steps // n further samples
         });
       } else if ((match = p.match(repeatRegex))) {
-        // Handles 'axn' (numeric shorthand) and '_xn', 'stalexn' (special repeats), '#xn' (numeric repeat)
+        // Handles 'axn' (numeric shorthand) and '_xn', '#xn' (numeric repeat)
         const valueStr = match[1];
         const n = parseInt(match[2], 10);
 
@@ -49,7 +49,7 @@ export const fn = {
       } else if (p === "#") {
         seriesSpec.push({ initial: "#", increment: 0, steps: 0 }); // Single '#'
       } else if (p === "_") {
-        seriesSpec.push({ initial: "_", increment: '_' });
+        seriesSpec.push({ initial: "_", increment: '_', steps: 0 });
       } else if (numericLiteralRegex.test(p)) {
         seriesSpec.push({ initial: parseFloat(p),  increment: 0, steps: 0 }); // Single number
       } else {
@@ -75,7 +75,11 @@ export const fn = {
         if (len==0){
           values = [0];
         }else{
-          values.push(values[values.length - 1] + s.increment);
+          let lastValue = values[values.length - 1];
+          if (isNaN(lastValue)) {
+            lastValue = 0;
+          }
+          values.push(lastValue + s.increment);
         }
       } else {
         if (s.initial === '_') {
