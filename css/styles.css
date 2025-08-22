@@ -26,12 +26,16 @@ html, body {
   overflow-y: auto; /* Allow scrolling if content exceeds height */
 }
 
+.central-container {
+  flex-grow: 1; /* Central container takes remaining space */
+  display: flex;
+  flex-direction: column;
+}
+
 .chart-container {
-  flex-grow: 1; /* Chart container takes remaining space */
   background-color: #1F2126; /* Match panel background for the chart area */
   border-radius: 4px;
   padding: 10px; /* Reduced padding around the canvas */
-  display: flex; /* To help center/contain the canvas if needed */
   position: relative; /* For responsive chart */
   min-height: 400px; /* Ensure minimum height for chart visibility */
   height: 50vh; /* Take full height of parent */

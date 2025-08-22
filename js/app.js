@@ -152,7 +152,7 @@ export function createApp() {
           th1, 
           th2, 
           debounceEnabled.value, 
-          debounceTime.value
+          debounceEnabled.value ? debounceTime.value : 0
         );
       };
 
