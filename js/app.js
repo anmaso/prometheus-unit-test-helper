@@ -2,6 +2,7 @@ import { fn } from './utils.js';
 import { ChartComponent } from './chart-component.js';
 import { highlightPlugin } from './chart-plugins.js';
 import { runUnitTests } from './tests.js';
+import { examples } from './examples.js';
 
 // Make highlightPlugin available globally for ChartComponent
 window.highlightPlugin = highlightPlugin;
@@ -68,6 +69,7 @@ export function createApp() {
       let expandedBad      = Vue.ref('');
       let expandedGood     = Vue.ref('');
       let thresholdCrossings = Vue.ref([]);
+      let selectedExample  = Vue.ref('');
 
       // --- COMPUTED CHART DATA ---
       const chartData = Vue.reactive({
@@ -106,6 +108,14 @@ export function createApp() {
       // Computed property to determine if good events input should be disabled
       const goodEventsDisabled = Vue.computed(() => {
         return selectedFormula.value === 'countOverN';
+      });
+
+      // Computed property for current example's description
+      const currentExampleDescription = Vue.computed(() => {
+        if (selectedExample.value && examples[selectedExample.value]) {
+          return examples[selectedExample.value].description;
+        }
+        return '';
       });
 
       // Function to update chart data
@@ -201,6 +211,39 @@ export function createApp() {
         localStorage.setItem(LS_KEYS.INTERVAL, newValue); 
       });
 
+      // Watch for example selection and load example data
+      Vue.watch(selectedExample, (newValue) => {
+        if (newValue) {
+          loadExample(newValue);
+        }
+      });
+
+      // Clear selected example when user manually changes key values
+      const clearSelectedExample = () => {
+        selectedExample.value = '';
+      };
+
+      Vue.watch([good, bad, short, long, threshold1, threshold2, selectedFormula], () => {
+        if (selectedExample.value) {
+          // Small delay to prevent clearing when loading an example
+          setTimeout(() => {
+            if (selectedExample.value) {
+              const example = examples[selectedExample.value];
+              if (example &&
+                  (good.value !== example.good ||
+                   bad.value !== example.bad ||
+                   short.value !== parseInt(example.alert1) ||
+                   long.value !== parseInt(example.alert2) ||
+                   threshold1.value !== parseFloat(example.threshold1) ||
+                   threshold2.value !== parseFloat(example.threshold2) ||
+                   selectedFormula.value !== example.formula)) {
+                clearSelectedExample();
+              }
+            }
+          }, 100);
+        }
+      });
+
       const toggleHelpModal = () => {
         showHelpModal.value = !showHelpModal.value;
       };
@@ -217,6 +260,20 @@ export function createApp() {
           textArea.select();
           document.execCommand('copy');
           document.body.removeChild(textArea);
+        }
+      };
+
+      const loadExample = (exampleName) => {
+        if (exampleName && examples[exampleName]) {
+          const example = examples[exampleName];
+          selectedFormula.value = example.formula || 'proportionRateOverN';
+          good.value = example.good || '';
+          bad.value = example.bad || '';
+          short.value = parseInt(example.alert1) || 5;
+          long.value = parseInt(example.alert2) || 60;
+          threshold1.value = parseFloat(example.threshold1) || 0.01344;
+          threshold2.value = parseFloat(example.threshold2) || 0.01344;
+          debounceTime.value = parseInt(example.debounce) || 1;
         }
       };
 
@@ -254,6 +311,10 @@ export function createApp() {
         goodEventsDisabled, // Computed property for disabling good events input
         thresholdCrossings, // Alert threshold crossing data
         fn, // Expose utility functions to template
+        selectedExample, // Selected example from combo box
+        examples, // Examples data
+        loadExample, // Function to load example data
+        currentExampleDescription, // Current example's description
       };
       
       return result;

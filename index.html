@@ -80,6 +80,13 @@
 
       <br />
       <br />
+      Load an example:
+      <br />
+      <select v-model="selectedExample">
+        <option v-for="(example, name) in examples" :key="name" :value="name">{{name}}</option>
+      </select>
+      <br />
+      <br />
       <button @click="toggleHelpModal()">Help</button>
       <!-- Help Modal -->
       <div v-if="showHelpModal" class="modal-overlay" @click.self="toggleHelpModal()">
@@ -278,7 +285,16 @@
               {{crossing.threshold2Value?.toFixed(4)}}</span>
           </div>
         </div>
+      <div v-if="currentExampleDescription" class="description-container">
+        <h3>Example Description</h3>
+        <div class="description-content">
+          <p>{{ currentExampleDescription }}</p>
+        </div>
       </div>
+      </div>
+      
+      <!-- Example Description Section -->
+      
       <!-- Series Values Section -->
       <div v-if="showSeriesValues" class="series-values-container">
         <div class="series-data">

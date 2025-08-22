@@ -389,3 +389,31 @@ select {
   flex: 1;
   overflow: hidden;
 }
+
+/* Description Container Styles */
+.description-container {
+  background-color: #1F2126;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  max-width: 100%;
+}
+
+.description-container h3 {
+  color: #E0E0E0;
+  margin-top: 0;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #3A3D42;
+  padding-bottom: 8px;
+}
+
+.description-content {
+  color: #B4B7C0;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.description-content p {
+  margin: 0;
+}
