@@ -18,10 +18,12 @@ export const ChartComponent = {
     showTimeFormat: { type: Boolean, default: false },
     interval: { type: String, default: '1m' }
   },
-  template: `<canvas ref="chartCanvas" style="width: 100%; height: 100%;"></canvas>`,
+  template: `<canvas ref="chartCanvas"></canvas>`,
   mounted() {
     this.$nextTick(() => {
       this.renderChart();
+      // Add resize listener to handle window resize
+      window.addEventListener('resize', this.handleResize);
     });
   },
   watch: {
@@ -78,6 +80,24 @@ export const ChartComponent = {
     }
   },
   methods: {
+    handleResize() {
+      // Debounce resize events
+      clearTimeout(this._resizeTimeout);
+      this._resizeTimeout = setTimeout(() => {
+        if (this._chart && this.$refs.chartCanvas) {
+          const canvas = this.$refs.chartCanvas;
+          const containerWidth = canvas.parentElement.clientWidth - 20;
+          const containerHeight = canvas.parentElement.clientHeight - 20;
+          
+          canvas.width = containerWidth;
+          canvas.height = containerHeight;
+          canvas.style.width = containerWidth + 'px';
+          canvas.style.height = containerHeight + 'px';
+          
+          this._chart.resize(containerWidth, containerHeight);
+        }
+      }, 150);
+    },
     renderChart() {
       if (!this.labels || !this.alert1 || !this.alert2) {
         return;
@@ -92,6 +112,14 @@ export const ChartComponent = {
         console.error('Canvas not found');
         return;
       }
+      
+      // Set fixed canvas dimensions to prevent width changes
+      const containerWidth = canvas.parentElement.clientWidth - 20; // Account for padding
+      const containerHeight = canvas.parentElement.clientHeight - 20;
+      canvas.width = containerWidth;
+      canvas.height = containerHeight;
+      canvas.style.width = containerWidth + 'px';
+      canvas.style.height = containerHeight + 'px';
       
       const ctx = canvas.getContext('2d');
       if (!ctx) {
@@ -125,7 +153,7 @@ export const ChartComponent = {
           animation: {
             duration: 0
           },
-          responsive: true,
+          responsive: false,
           maintainAspectRatio: false,
           plugins: {
             highlight: { enabled: this.highlightEnabled },
@@ -212,6 +240,10 @@ export const ChartComponent = {
     },
   },
   beforeUnmount() {
+    // Clean up resize listener
+    window.removeEventListener('resize', this.handleResize);
+    clearTimeout(this._resizeTimeout);
+    
     if (this._chart) {
       this._chart.destroy();
     }
