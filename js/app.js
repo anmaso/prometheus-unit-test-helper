@@ -102,6 +102,11 @@ export function createApp() {
         );
       });
 
+      // Computed property to determine if good events input should be disabled
+      const goodEventsDisabled = Vue.computed(() => {
+        return selectedFormula.value === 'countOverN';
+      });
+
       // Function to update chart data
       const updateChartData = () => {
         const def_bad = fn.serieDefFromString(bad.value);
@@ -235,6 +240,7 @@ export function createApp() {
         copyToClipboard,
         chartData,
         isUpdating,
+        goodEventsDisabled, // Computed property for disabling good events input
         fn, // Expose utility functions to template
       };
       

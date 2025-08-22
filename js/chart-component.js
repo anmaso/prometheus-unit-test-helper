@@ -164,7 +164,7 @@ export const ChartComponent = {
             },
             y: {
               display: true,
-              title: { display: true, text: 'Value', color: '#D8D9DA' },
+              title: { display: false, text: 'Value', color: '#D8D9DA' },
               suggestedMin: 0,
               ticks: { color: '#B4B7C0' },
               grid: { color: '#3A3D42' }
@@ -172,7 +172,7 @@ export const ChartComponent = {
             y_errors: {
               position: 'right',
               display: true,
-              title: { display: true, text: 'Error Related Value', color: '#D8D9DA' },
+              title: { display: false, text: 'Error Related Value', color: '#D8D9DA' },
               suggestedMin: 0,
               suggestedMax: 1,
               ticks: { color: '#B4B7C0' },

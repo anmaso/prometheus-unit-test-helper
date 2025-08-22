@@ -230,6 +230,20 @@ select {
   color: #adcbe8;
 }
 
+.good_events:disabled {
+  color: #666;
+  background-color: #1a1c1e;
+  cursor: not-allowed;
+  opacity: 0.5;
+  border-color: #2a2c2e;
+}
+
+/* Style for disabled state label */
+.good-events-label-disabled {
+  opacity: 0.5;
+  color: #666 !important;
+}
+
 .copy-button {
   background: none;
   border: none;
