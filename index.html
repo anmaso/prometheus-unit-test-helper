@@ -259,14 +259,14 @@
         <div class="crossings-data">
           <div class="crossing-header">
             <span class="crossing-step">Step</span>
-            <span v-if="showTimeFormat" class="crossing-time">Time</span>
+            <span class="crossing-time">Time</span>
             <span class="crossing-type">Event</span>
             <span class="crossing-values">Alert1 vs Threshold1</span>
             <span class="crossing-values">Alert2 vs Threshold2</span>
           </div>
           <div v-for="(crossing, index) in thresholdCrossings" :key="'crossing-' + index" class="crossing-item">
             <span class="crossing-step">{{crossing.step}}</span>
-            <span v-if="showTimeFormat" class="crossing-time">{{fn.stepToTimeString(crossing.step, interval)}}</span>
+            <span class="crossing-time">{{fn.stepToTimeString(crossing.step, interval)}}</span>
             <span class="crossing-type"
               :class="crossing.type === 'above_threshold' ? 'above-threshold' : 'below-threshold'">
               {{crossing.type === 'above_threshold' ? 'Above Threshold' : 'Below Threshold'}}
@@ -289,10 +289,11 @@
       
       <!-- Series Values Section -->
       <div class="series-values-container">
+        <h3>Series values</h3>
         <div class="series-data">
           <div class="series-item">
             <span class="index">step</span>
-            <span v-if="showTimeFormat" class="time-column">time</span>
+            <span class="time-column">time</span>
             <span class="value">good</span>
             <span class="value bad_events">bad</span>
             <span class="value">rate good</span>
@@ -300,7 +301,7 @@
           </div>
           <div v-for="(value, index) in step_values.good_values" :key="'good-' + index" class="series-item">
             <span class="index">{{index}}:</span>
-            <span v-if="showTimeFormat" class="time-column">{{timeStrings[index]}}</span>
+            <span class="time-column">{{timeStrings[index]}}</span>
             <span class="value">{{value}}</span>
             <span class="value bad_events">{{step_values.bad_values[index]}}</span>
             <span class="value">{{step_values.rate_good[index]}}</span>

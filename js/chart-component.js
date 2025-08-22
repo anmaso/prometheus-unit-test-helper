@@ -144,6 +144,12 @@ export const ChartComponent = {
           },
           responsive: false,
           maintainAspectRatio: false,
+          onClick: (event, elements) => {
+            if (elements.length > 0) {
+              const dataIndex = elements[0].index;
+              this.scrollToSeriesValue(dataIndex);
+            }
+          },
           plugins: {
             highlight: { enabled: this.highlightEnabled },
             zoom: {
@@ -225,6 +231,48 @@ export const ChartComponent = {
         // Force chart update
         this._chart.update('none');
       }
+    },
+    scrollToSeriesValue(dataIndex) {
+      // Find the series-values-container
+      const seriesContainer = document.querySelector('.series-values-container');
+      if (!seriesContainer) {
+        console.warn('Series values container not found');
+        return;
+      }
+      
+      // Find the series data container
+      const seriesData = seriesContainer.querySelector('.series-data');
+      if (!seriesData) {
+        console.warn('Series data container not found');
+        return;
+      }
+      
+      // Find the specific series item for this data index (add 1 to skip header row)
+      const targetRow = seriesData.children[dataIndex + 1];
+      if (!targetRow) {
+        console.warn(`Series row for index ${dataIndex} not found`);
+        return;
+      }
+      
+      // Scroll the container to show this row
+      // Use scrollIntoView with smooth behavior and center alignment
+      targetRow.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'nearest'
+      });
+      
+      // Add a brief highlight effect to the target row
+      targetRow.style.transition = 'background-color 0.3s ease';
+      targetRow.style.backgroundColor = 'rgba(54, 162, 235, 0.3)'; // Light blue highlight
+      
+      // Remove highlight after 1 second
+      setTimeout(() => {
+        targetRow.style.backgroundColor = '';
+        setTimeout(() => {
+          targetRow.style.transition = '';
+        }, 300);
+      }, 1000);
     },
   },
   beforeUnmount() {
