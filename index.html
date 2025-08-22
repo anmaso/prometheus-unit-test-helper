@@ -193,24 +193,50 @@
         </div>
       </div>
     </div>
-    <div class="chart-container">
-      <ChartComponent
-        :alert1="chartData.alert1"
-        :alert2="chartData.alert2"
-        :threshold1="chartData.threshold1"
-        :threshold2="chartData.threshold2"
-        :bad="chartData.bad"
-        :good="chartData.good"
-        :rate_bad="chartData.rate_bad"
-        :rate_good="chartData.rate_good"
-        :labels="chartData.labels"
-        :highlight-enabled="highlightEnabled"
-        :debounce-enabled="debounceEnabled"
-        :debounce-time="debounceTime"
-        :show-time-format="showTimeFormat"
-        :interval="interval"
-      />
-    </div>
+    <div class="central-container">
+      <div class="chart-container">
+        <ChartComponent
+          :alert1="chartData.alert1"
+          :alert2="chartData.alert2"
+          :threshold1="chartData.threshold1"
+          :threshold2="chartData.threshold2"
+          :bad="chartData.bad"
+          :good="chartData.good"
+          :rate_bad="chartData.rate_bad"
+          :rate_good="chartData.rate_good"
+          :labels="chartData.labels"
+          :highlight-enabled="highlightEnabled"
+          :debounce-enabled="debounceEnabled"
+          :debounce-time="debounceTime"
+          :show-time-format="showTimeFormat"
+          :interval="interval"
+        />
+      </div>
+
+    
+    <!-- Alert Threshold Crossings Section -->
+      <div v-if="highlightEnabled && thresholdCrossings.length > 0" class="threshold-crossings-container">
+        <h3>Alert Threshold Crossings</h3>
+        <div class="crossings-data">
+          <div class="crossing-header">
+            <span class="crossing-step">Step</span>
+            <span v-if="showTimeFormat" class="crossing-time">Time</span>
+            <span class="crossing-type">Event</span>
+            <span class="crossing-values">Alert1 vs Threshold1</span>
+            <span class="crossing-values">Alert2 vs Threshold2</span>
+          </div>
+          <div v-for="(crossing, index) in thresholdCrossings" :key="'crossing-' + index" class="crossing-item">
+            <span class="crossing-step">{{crossing.step}}</span>
+            <span v-if="showTimeFormat" class="crossing-time">{{fn.stepToTimeString(crossing.step, interval)}}</span>
+            <span class="crossing-type" :class="crossing.type === 'above_threshold' ? 'above-threshold' : 'below-threshold'">
+              {{crossing.type === 'above_threshold' ? 'Above Threshold' : 'Below Threshold'}}
+            </span>
+            <span class="crossing-values">{{crossing.alert1Value?.toFixed(4)}} > {{crossing.threshold1Value?.toFixed(4)}}</span>
+            <span class="crossing-values">{{crossing.alert2Value?.toFixed(4)}} > {{crossing.threshold2Value?.toFixed(4)}}</span>
+          </div>
+        </div>
+      </div>
+    </div> <!-- central-container -->
     <!-- Series Values Section -->
     <div v-if="showSeriesValues" class="series-values-container">
         <div class="series-data">

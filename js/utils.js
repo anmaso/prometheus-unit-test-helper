@@ -299,4 +299,84 @@ export const fn = {
 
     return expandedParts.join(' ');
   },
+
+  // Function to detect alert threshold crossings
+  detectThresholdCrossings: (alert1Data, alert2Data, threshold1Data, threshold2Data, debounceEnabled = false, debounceTime = 0) => {
+    if (!alert1Data || !alert2Data || !threshold1Data || !threshold2Data) {
+      return [];
+    }
+
+    const numPoints = Math.min(alert1Data.length, alert2Data.length, threshold1Data.length, threshold2Data.length);
+    if (numPoints === 0) {
+      return [];
+    }
+
+    const crossings = [];
+    let wasOverThreshold = false;
+    let consecutiveOverThreshold = 0;
+    let effectivelyInAlert = false;
+
+    for (let i = 0; i < numPoints; i++) {
+      const isOverThreshold = alert1Data[i] > threshold1Data[i] && alert2Data[i] > threshold2Data[i];
+
+      if (debounceEnabled) {
+        // Handle debounced logic
+        if (isOverThreshold) {
+          consecutiveOverThreshold++;
+          if (!effectivelyInAlert && consecutiveOverThreshold >= debounceTime) {
+            // Just crossed into alert state after debounce
+            crossings.push({
+              step: i,
+              type: 'above_threshold',
+              alert1Value: alert1Data[i],
+              alert2Value: alert2Data[i],
+              threshold1Value: threshold1Data[i],
+              threshold2Value: threshold2Data[i]
+            });
+            effectivelyInAlert = true;
+          }
+        } else {
+          if (effectivelyInAlert) {
+            // Crossed back below threshold
+            crossings.push({
+              step: i,
+              type: 'below_threshold',
+              alert1Value: alert1Data[i],
+              alert2Value: alert2Data[i],
+              threshold1Value: threshold1Data[i],
+              threshold2Value: threshold2Data[i]
+            });
+            effectivelyInAlert = false;
+          }
+          consecutiveOverThreshold = 0;
+        }
+      } else {
+        // Handle simple (non-debounced) logic
+        if (isOverThreshold && !wasOverThreshold) {
+          // Crossed above threshold
+          crossings.push({
+            step: i,
+            type: 'above_threshold',
+            alert1Value: alert1Data[i],
+            alert2Value: alert2Data[i],
+            threshold1Value: threshold1Data[i],
+            threshold2Value: threshold2Data[i]
+          });
+        } else if (!isOverThreshold && wasOverThreshold) {
+          // Crossed below threshold
+          crossings.push({
+            step: i,
+            type: 'below_threshold',
+            alert1Value: alert1Data[i],
+            alert2Value: alert2Data[i],
+            threshold1Value: threshold1Data[i],
+            threshold2Value: threshold2Data[i]
+          });
+        }
+        wasOverThreshold = isOverThreshold;
+      }
+    }
+
+    return crossings;
+  }
 }; 

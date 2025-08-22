@@ -67,6 +67,7 @@ export function createApp() {
       let goodSeriesData   = Vue.ref([]);
       let expandedBad      = Vue.ref('');
       let expandedGood     = Vue.ref('');
+      let thresholdCrossings = Vue.ref([]);
 
       // --- COMPUTED CHART DATA ---
       const chartData = Vue.reactive({
@@ -143,6 +144,16 @@ export function createApp() {
         chartData.rate_bad = rate_bad;
         chartData.rate_good = rate_good;
         chartData.labels = new Array(max).fill(0).map((_, i) => i.toString());
+        
+        // Calculate threshold crossings
+        thresholdCrossings.value = fn.detectThresholdCrossings(
+          alert1, 
+          alert2, 
+          th1, 
+          th2, 
+          debounceEnabled.value, 
+          debounceTime.value
+        );
       };
 
       // Initial update
@@ -241,6 +252,7 @@ export function createApp() {
         chartData,
         isUpdating,
         goodEventsDisabled, // Computed property for disabling good events input
+        thresholdCrossings, // Alert threshold crossing data
         fn, // Expose utility functions to template
       };
       
