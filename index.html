@@ -1,7 +1,9 @@
 <html>
+
 <head>
   <title>SLO Unit Test Helper - Grafana Style</title>
 </head>
+
 <body>
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -11,111 +13,131 @@
   <div class="main-container" id="app">
     <div class="config-panel">
       <h2>Configuration</h2>
-      <span :class="{ 'good-events-label-disabled': goodEventsDisabled }">good events</span> <span class="expanded-definition-mini" :class="{ 'good-events-label-disabled': goodEventsDisabled }"><code>{{good_length}} data points, {{good_total_duration}} duration</code></span><input class="good_events" v-model="good" :disabled="goodEventsDisabled" size="100" />
+      <span :class="{ 'good-events-label-disabled': goodEventsDisabled }">good events</span> <span
+        class="expanded-definition-mini"
+        :class="{ 'good-events-label-disabled': goodEventsDisabled }"><code>{{good_length}} data points, {{good_total_duration}} duration</code></span><input
+        class="good_events" v-model="good" :disabled="goodEventsDisabled" size="100" />
       <div v-if="showSeriesValues" class="expanded-definition-mini">
         <button @click="copyToClipboard(expandedGood)" class="copy-button" title="Copy good events to clipboard">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
         </button>
         <code>{{expandedGood}}</code>
       </div>
-      <br/>
-      bad events <span class="expanded-definition-mini"><code class="bad_events">{{bad_length}} data points, {{bad_total_duration}} duration</code></span><input class="bad_events" v-model="bad" size="100" />
+      <br />
+      bad events <span class="expanded-definition-mini"><code
+          class="bad_events">{{bad_length}} data points, {{bad_total_duration}} duration</code></span><input
+        class="bad_events" v-model="bad" size="100" />
       <div v-if="showSeriesValues" class="expanded-definition-mini">
         <code class="bad_events">{{expandedBad}}</code>
         <button @click="copyToClipboard(expandedBad)" class="copy-button" title="Copy bad events to clipboard">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
         </button>
       </div>
-      <br/>
+      <br />
       Alert formula:
       <select v-model="selectedFormula">
         <option value="proportionRateOverN">Proportion Rate over N</option>
         <option value="countOverN">Count over N</option>
       </select>
-      <br/>
+      <br />
       <span class="alert alert1"></span>
-      alert 1 window 
+      alert 1 window
       <input v-model="short" size="5" />
       threshold
       <input v-model="threshold1" size="6" />
-      <br/> 
+      <br />
       <span class="alert alert2"></span>
-      alert 2 window 
+      alert 2 window
       <input v-model="long" size="5" />
       threshold <input v-model="threshold2" size="6" />
-      <br/> 
+      <br />
       <input type="checkbox" id="highlightToggleCheckbox" v-model="highlightEnabled" />
       <label for="highlightToggleCheckbox" style="cursor: pointer;">Highlight alert</label>
-      <br/> 
+      <br />
       <input type="checkbox" id="showSeriesValuesCheckbox" v-model="showSeriesValues" />
       <label for="showSeriesValuesCheckbox" style="cursor: pointer;">Show series values</label>
-      <br/>
+      <br />
       <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" />
       <label for="showTimeFormatCheckbox" style="cursor: pointer;">Show time format</label>
-      <br/>
+      <br />
       <label for="intervalInput" style="margin-right: 10px;">Interval:</label>
       <input id="intervalInput" v-model="interval" size="5" placeholder="1m" />
-      <small style="margin-left: 5px; color: #B4B7C0;">Time between samples (e.g., 1m, 5m, 1h, 30s). It only affects the graph x labels</small>
-      <br/>
+      <small style="margin-left: 5px; color: #B4B7C0;">Time between samples (e.g., 1m, 5m, 1h, 30s). It only affects the
+        graph x labels</small>
+      <br />
       <input type="checkbox" id="debounceToggleCheckbox" v-model="debounceEnabled" />
       <label for="debounceToggleCheckbox" style="cursor: pointer;">Debounce alert</label>
       <label for="debounceTimeInput" style="margin-left: 10px;">window </label>
       <input id="debounceTimeInput" v-model="debounceTime" size="3" min="0" />
 
-      <br/> 
-      <br/> 
+      <br />
+      <br />
       <button @click="toggleHelpModal()">Help</button>
       <!-- Help Modal -->
       <div v-if="showHelpModal" class="modal-overlay" @click.self="toggleHelpModal()">
         <div class="modal-content">
           <span class="close-button" @click="toggleHelpModal()">&times;</span>
           <h2>Help - SLO Unit Test Helper</h2>
-          <p>This tool helps you visualize SLO (Service Level Objective) scenarios by defining series of good and bad events over time.</p>
+          <p>This tool helps you visualize SLO (Service Level Objective) scenarios by defining series of good and bad
+            events over time.</p>
 
           <h4>Input Fields:</h4>
           <ul>
-            <li><strong><span class="good_events">Good</span>/<span class="bad_events">Bad</span> Events:</strong> Define event series using a prometheus alert format. 
+            <li><strong><span class="good_events">Good</span>/<span class="bad_events">Bad</span> Events:</strong>
+              Define event series using a prometheus alert format.
               <ul>
                 <li>A good/bad serie is defined by a series of segments.</li>
-                <li>A segment is defined by <code>[initial]+[increment]x[steps]</code>. 
+                <li>A segment is defined by <code>[initial]+[increment]x[steps]</code>.
                   <ul>
 
-                <li><code>initial</code>: The starting value for this segment. Use <code>#</code> to use the last value from the previous segment.</li>
-                <li><code>increment</code>: The value to add at each step within this segment.</li>
-                <li><code>steps</code>: The number of data points in this segment.</li>
-                  </ul></li>
+                    <li><code>initial</code>: The starting value for this segment. Use <code>#</code> to use the last
+                      value from the previous segment.</li>
+                    <li><code>increment</code>: The value to add at each step within this segment.</li>
+                    <li><code>steps</code>: The number of data points in this segment.</li>
+                  </ul>
+                </li>
                 <li>The character <b class="bad_events"><code>#</code></b> has special meaning in this tool:
-                <ul>
-                  <li>Computes the initial value for the next segment from the last value of the previous segment.</li>
-                  <li>This is not a valid value in Prometheus.</li>
-                  <li>You get the real expression for Prometheus after the input box</li>
-                  <li>It is used to continue the series from the last value of the previous segment.</li>
-                </ul></li>
-                <li>Example: <code>0+0x10 10+1x10 #+3x10</code> 
+                  <ul>
+                    <li>Computes the initial value for the next segment from the last value of the previous segment.
+                    </li>
+                    <li>This is not a valid value in Prometheus.</li>
+                    <li>You get the real expression for Prometheus after the input box</li>
+                    <li>It is used to continue the series from the last value of the previous segment.</li>
+                  </ul>
+                </li>
+                <li>Example: <code>0+0x10 10+1x10 #+3x10</code>
                   <ul>
                     <li>starts at 0, and repeats 0 for 10 steps</li>
                     <li>then jumps to 10 and increments by 1 for another 10 steps</li>
-                    <li>by using <code>#</code> we use the last value from the previous segment (20) as the initial value for the next segment</li>
+                    <li>by using <code>#</code> we use the last value from the previous segment (20) as the initial
+                      value for the next segment</li>
                     <li>then continues from the last value with 3 increment for 10 steps</li>
                   </ul>
               </ul>
             </li>
-            <li><strong>Threshold 1 & 2:</strong> These are the threshold values for <code>alert1</code> and <code>alert2</code> series respectively.
+            <li><strong>Threshold 1 & 2:</strong> These are the threshold values for <code>alert1</code> and
+              <code>alert2</code> series respectively.
               <ul>
-                <li>For <strong>Proportion Rate over N</strong>: Thresholds are typically small numbers (e.g., 0.01 for 1%).</li>
+                <li>For <strong>Proportion Rate over N</strong>: Thresholds are typically small numbers (e.g., 0.01 for
+                  1%).</li>
                 <li>For <strong>Count over N</strong>: Thresholds represent a sum of bad events (e.g., 100).
-                <ul>
-                  <li>This means that only the bad events is useful for the alerting.</li>
-                </ul></li>
+                  <ul>
+                    <li>This means that only the bad events is useful for the alerting.</li>
+                  </ul>
+                </li>
               </ul>
             </li>
-            <li><strong>Alert1 Range (short):</strong> The window size (number of data points) used to calculate the <code>alert1</code> series.</li>
+            <li><strong>Alert1 Range (short):</strong> The window size (number of data points) used to calculate the
+              <code>alert1</code> series.
+            </li>
             <li><strong>Alert2 Range (long):</strong> The window size for the <code>alert2</code> series.</li>
           </ul>
 
@@ -141,7 +163,8 @@
                 <li>
                   If checked, highlights will only appear if:
                   <ul>
-                    <li>The alert condition (<code>alert1</code> &gt; <code>threshold1</code> AND <code>alert2</code> &gt; <code>threshold2</code>)</li>
+                    <li>The alert condition (<code>alert1</code> &gt; <code>threshold1</code> AND <code>alert2</code>
+                      &gt; <code>threshold2</code>)</li>
                     <li>persists for the specified "Debounce Time".</li>
                   </ul>
                 </li>
@@ -151,71 +174,88 @@
               <strong>Debounce Time (steps):</strong>
               <ul>
                 <li>
-                  The number of consecutive data points an alert condition must be true before it's visually highlighted.
+                  The number of consecutive data points an alert condition must be true before it's visually
+                  highlighted.
                 </li>
                 <li>
                   Only applies if "Debounce alert" is checked.
                 </li>
               </ul>
             </li>
-            <li><strong>Show Series Values Checkbox:</strong> Displays the expanded series definitions and a detailed table showing step-by-step values for good events, bad events, and their rates. Also shows copy buttons for easy copying of expanded definitions.</li>
-            <li><strong>Show Time Format Checkbox:</strong> Toggles between showing step numbers and time format (e.g., "1h 30m") on the chart axis and tooltips. Time format uses the configured interval setting.</li>
-            <li><strong>Interval:</strong> Specifies the time between samples. Supports seconds (s), minutes (m), hours (h), and days (d). Examples: "1m" (1 minute), "5m" (5 minutes), "1h" (1 hour), "30s" (30 seconds). Default is "1m".</li>
-            <li><strong>Formula Selector:</strong> Choose the calculation method for <code>alert1</code> and <code>alert2</code> series:
+            <li><strong>Show Series Values Checkbox:</strong> Displays the expanded series definitions and a detailed
+              table showing step-by-step values for good events, bad events, and their rates. Also shows copy buttons
+              for easy copying of expanded definitions.</li>
+            <li><strong>Show Time Format Checkbox:</strong> Toggles between showing step numbers and time format (e.g.,
+              "1h 30m") on the chart axis and tooltips. Time format uses the configured interval setting.</li>
+            <li><strong>Interval:</strong> Specifies the time between samples. Supports seconds (s), minutes (m), hours
+              (h), and days (d). Examples: "1m" (1 minute), "5m" (5 minutes), "1h" (1 hour), "30s" (30 seconds). Default
+              is "1m".</li>
+            <li><strong>Formula Selector:</strong> Choose the calculation method for <code>alert1</code> and
+              <code>alert2</code> series:
               <ul>
-                <li><strong>Proportion Rate over N:</strong> Calculates <code>sum(bad events in window) / (sum(bad events in window) + sum(good events in window))</code>. This is a ratio, typically between 0 and 1.</li>
-                <li><strong>Count over N:</strong> Calculates <code>sum(bad events in window)</code>. This is an absolute count/sum of bad events over the specified window. It only uses the 'bad events' series for its calculation.</li>
+                <li><strong>Proportion Rate over N:</strong> Calculates
+                  <code>sum(bad events in window) / (sum(bad events in window) + sum(good events in window))</code>.
+                  This is a ratio, typically between 0 and 1.
+                </li>
+                <li><strong>Count over N:</strong> Calculates <code>sum(bad events in window)</code>. This is an
+                  absolute count/sum of bad events over the specified window. It only uses the 'bad events' series for
+                  its calculation.</li>
               </ul>
             </li>
           </ul>
 
           <h4>Chart Features:</h4>
           <ul>
-            <li><strong>Series Display:</strong> The chart shows multiple series including alert1, alert2, thresholds, raw bad/good events (hidden by default), and their rates (hidden by default). You can toggle series visibility in the chart legend.</li>
-            <li><strong>Zoom and Pan:</strong> The chart supports zooming and panning for detailed analysis. Use mouse wheel to zoom and drag to pan.</li>
-            <li><strong>Tooltips:</strong> Hover over data points to see detailed values. Tooltips show step number or time format based on the "Show Time Format" setting.</li>
-            <li><strong>Auto-update:</strong> The chart automatically updates when you modify any input values. Changes to bad/good events are throttled to prevent excessive updates.</li>
+            <li><strong>Series Display:</strong> The chart shows multiple series including alert1, alert2, thresholds,
+              raw bad/good events (hidden by default), and their rates (hidden by default). You can toggle series
+              visibility in the chart legend.</li>
+            <li><strong>Zoom and Pan:</strong> The chart supports zooming and panning for detailed analysis. Use mouse
+              wheel to zoom and drag to pan.</li>
+            <li><strong>Tooltips:</strong> Hover over data points to see detailed values. Tooltips show step number or
+              time format based on the "Show Time Format" setting.</li>
+            <li><strong>Auto-update:</strong> The chart automatically updates when you modify any input values. Changes
+              to bad/good events are throttled to prevent excessive updates.</li>
           </ul>
 
           <h4>Advanced Series Syntax:</h4>
           <ul>
-            <li><strong>Special Values:</strong> Use <code>_</code> for special values that don't affect calculations (e.g., <code>_x5</code> for 5 special values).</li>
-            <li><strong>Decimal Values:</strong> Support for decimal numbers in series definitions (e.g., <code>0.5+0.1x2</code>).</li>
-            <li><strong>Negative Values:</strong> Support for negative initial values and decrements (e.g., <code>-2+4x3</code> or <code>1-2x4</code>).</li>
-            <li><strong>Shorthand Notation:</strong> Use <code>axn</code> as shorthand for <code>a+0xn</code> (constant value for n+1 steps).</li>
+            <li><strong>Special Values:</strong> Use <code>_</code> for special values that don't affect calculations
+              (e.g., <code>_x5</code> for 5 special values).</li>
+            <li><strong>Decimal Values:</strong> Support for decimal numbers in series definitions (e.g.,
+              <code>0.5+0.1x2</code>).
+            </li>
+            <li><strong>Negative Values:</strong> Support for negative initial values and decrements (e.g.,
+              <code>-2+4x3</code> or <code>1-2x4</code>).
+            </li>
+            <li><strong>Shorthand Notation:</strong> Use <code>axn</code> as shorthand for <code>a+0xn</code> (constant
+              value for n+1 steps).</li>
           </ul>
 
           <h4>Data Persistence:</h4>
-          <p>All your configuration settings are automatically saved to your browser's localStorage, so they will persist between sessions.</p>
+          <p>All your configuration settings are automatically saved to your browser's localStorage, so they will
+            persist between sessions.</p>
 
           <h4>Testing:</h4>
-          <p>Add <code>?test=true</code> to the URL to run unit tests in the browser console, which verify the core functionality of the series parsing and calculation functions.</p>
+          <p>Add <code>?test=true</code> to the URL to run unit tests in the browser console, which verify the core
+            functionality of the series parsing and calculation functions.</p>
         </div>
       </div>
-    </div>
-    <div class="central-container">
+    </div><!--- end of config panel -->
+
+    <div class="right-container">
       <div class="chart-container">
-        <ChartComponent
-          :alert1="chartData.alert1"
-          :alert2="chartData.alert2"
-          :threshold1="chartData.threshold1"
-          :threshold2="chartData.threshold2"
-          :bad="chartData.bad"
-          :good="chartData.good"
-          :rate_bad="chartData.rate_bad"
-          :rate_good="chartData.rate_good"
-          :labels="chartData.labels"
-          :highlight-enabled="highlightEnabled"
-          :debounce-enabled="debounceEnabled"
-          :debounce-time="debounceTime"
-          :show-time-format="showTimeFormat"
-          :interval="interval"
-        />
+        <ChartComponent :alert1="chartData.alert1" :alert2="chartData.alert2" :threshold1="chartData.threshold1"
+          :threshold2="chartData.threshold2" :bad="chartData.bad" :good="chartData.good" :rate_bad="chartData.rate_bad"
+          :rate_good="chartData.rate_good" :labels="chartData.labels" :highlight-enabled="highlightEnabled"
+          :debounce-enabled="debounceEnabled" :debounce-time="debounceTime" :show-time-format="showTimeFormat"
+          :interval="interval" />
       </div>
 
-    
-    <!-- Alert Threshold Crossings Section -->
-      <div v-if="highlightEnabled && thresholdCrossings.length > 0" class="threshold-crossings-container">
+      <div class="bottom-container">
+
+
+      <!-- Alert Threshold Crossings Section -->
+      <div class="threshold-crossings-container">
         <h3>Alert Threshold Crossings</h3>
         <div class="crossings-data">
           <div class="crossing-header">
@@ -228,17 +268,19 @@
           <div v-for="(crossing, index) in thresholdCrossings" :key="'crossing-' + index" class="crossing-item">
             <span class="crossing-step">{{crossing.step}}</span>
             <span v-if="showTimeFormat" class="crossing-time">{{fn.stepToTimeString(crossing.step, interval)}}</span>
-            <span class="crossing-type" :class="crossing.type === 'above_threshold' ? 'above-threshold' : 'below-threshold'">
+            <span class="crossing-type"
+              :class="crossing.type === 'above_threshold' ? 'above-threshold' : 'below-threshold'">
               {{crossing.type === 'above_threshold' ? 'Above Threshold' : 'Below Threshold'}}
             </span>
-            <span class="crossing-values">{{crossing.alert1Value?.toFixed(4)}} > {{crossing.threshold1Value?.toFixed(4)}}</span>
-            <span class="crossing-values">{{crossing.alert2Value?.toFixed(4)}} > {{crossing.threshold2Value?.toFixed(4)}}</span>
+            <span class="crossing-values">{{crossing.alert1Value?.toFixed(4)}} >
+              {{crossing.threshold1Value?.toFixed(4)}}</span>
+            <span class="crossing-values">{{crossing.alert2Value?.toFixed(4)}} >
+              {{crossing.threshold2Value?.toFixed(4)}}</span>
           </div>
         </div>
       </div>
-    </div> <!-- central-container -->
-    <!-- Series Values Section -->
-    <div v-if="showSeriesValues" class="series-values-container">
+      <!-- Series Values Section -->
+      <div v-if="showSeriesValues" class="series-values-container">
         <div class="series-data">
           <div class="series-item">
             <span class="index">step</span>
@@ -258,19 +300,22 @@
           </div>
         </div>
 
-    </div><!--- end of series values section -->
+      </div><!--- end of series values section -->
+      </div><!--- end of bottom-container -->
+    </div><!--- end of right-container -->
   </div>
-  
+
   <script type="module">
     import { createApp } from './js/app.js';
-    
+
     // Register Chart.js plugins
     Chart.register(ChartZoom);
-    
+
     // Create and mount the app
     const app = createApp();
     app.mount("#app");
   </script>
 
 </body>
+
 </html>

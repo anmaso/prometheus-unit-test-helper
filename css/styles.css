@@ -11,9 +11,9 @@ html, body {
 
 .main-container {
   display: flex;
-  flex-grow: 1; /* Allows main-container to fill available space */
-  gap: 10px; /* Reduced space between config panel and chart */
-  height: calc(100vh - 20px); /* Full height minus body padding */
+  flex-grow: 1;
+  gap: 10px;
+  height: calc(100vh - 90px);
 }
 
 .config-panel { /* Formerly #app, now a class for the left panel */
@@ -26,19 +26,26 @@ html, body {
   overflow-y: auto; /* Allow scrolling if content exceeds height */
 }
 
-.central-container {
-  flex-grow: 1; /* Central container takes remaining space */
+.right-container {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
+  gap: 10px;
 }
 
 .chart-container {
-  background-color: #1F2126; /* Match panel background for the chart area */
+  background-color: #1F2126;
   border-radius: 4px;
-  padding: 10px; /* Reduced padding around the canvas */
-  position: relative; /* For responsive chart */
-  min-height: 400px; /* Ensure minimum height for chart visibility */
-  height: 50vh; /* Take full height of parent */
+  padding: 10px;
+  position: relative;
+  min-height: 400px;
+  flex: 1;
+}
+
+.bottom-container {
+  display: flex;
+  gap: 10px;
+  min-height: 200px;
 }
 
 h2 {
@@ -72,9 +79,9 @@ button:hover {
 
 canvas {
   /* Canvas itself doesn't need background if container has it */
-  /* Ensure canvas is responsive within its container */
-  max-width: 100%;
-  max-height: 100%;
+  /* Fixed dimensions to prevent resizing with data changes */
+  display: block;
+  position: relative;
 }
 
 /* Modal Styles */
@@ -159,6 +166,8 @@ select {
   padding: 15px;
   border-radius: 4px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  flex: 1;
+  overflow-y: scroll;
 }
 
 .series-values-container h3 {
@@ -297,7 +306,6 @@ select {
   padding: 15px;
   border-radius: 4px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  margin-top: 10px;
   max-width: 100%;
 }
 
@@ -314,6 +322,7 @@ select {
   max-height: 300px;
   font-family: "Courier", "Monaco", monospace;
   font-size: 12px;
+  overflow: hidden;
 }
 
 .crossing-header {
@@ -369,341 +378,14 @@ select {
   width: 140px;
   flex-shrink: 0;
   font-size: 11px;
-}height of parent */
 }
 
-h2 {
-  color: #E0E0E0;
-  margin-top: 0;
-  border-bottom: 1px solid #3A3D42;
-  padding-bottom: 8px; /* Reduced padding */
-}
-
-input, button, select { /* Added select here */
-  font-family: "Courier", "Monaco";
-  background-color: #282A2E;
-  color: #D8D9DA;
-  /* For select, ensure the arrow matches the text color if possible, or use a standard one */
-  border: 1px solid #3E4147;
-  padding: 6px 10px; /* Reduced padding for inputs and buttons */
-  border-radius: 3px;
-  margin-right: 5px; /* Spacing between inline elements */
-  margin-bottom: 6px; /* Reduced bottom margin */
-}
-
-button {
-  cursor: pointer;
-  background-color: #36A2EB; /* A Grafana-like blue for buttons */
-  border-color: #36A2EB;
-}
-
-button:hover {
-  background-color: #2E8AC5;
-}
-
-canvas {
-  /* Canvas itself doesn't need background if container has it */
-  /* Ensure canvas is responsive within its container */
-  max-width: 100%;
-  max-height: 100%;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000; /* Ensure it's on top */
-}
-
-.modal-content {
-  background-color: #282A2E; /* Grafana panel-like background */
-  color: #D8D9DA;
-  padding: 20px; /* Slightly reduced modal padding */
-  border-radius: 5px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-  width: 80%;
-  max-width: 80%; /* Max width for readability */
-  max-height: 80vh; /* Max height */
-  overflow-y: auto; /* Scroll if content overflows */
-  position: relative; /* For positioning the close button */
-}
-
-.modal-content h2, .modal-content h4 {
-  color: #E0E0E0;
-  margin-top: 0;
-  border-bottom: 1px solid #3A3D42;
-  padding-bottom: 10px;
-}
-
-.modal-content ul {
-  padding-left: 20px;
-}
-
-.close-button {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  font-size: 28px;
-  font-weight: bold;
-  color: #B4B7C0;
-  cursor: pointer;
-}
-
-.close-button:hover {
-  color: #D8D9DA;
-}
-
-/* Adjust input sizes for narrower panel */
-.config-panel input[size="100"] {
-  width: calc(100% - 20px); /* Adjusted for new padding (6px*2 for input + some breathing room) */
-}
-
-.alert {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-}
-
-.alert1 {
-  background-color:#73bf79;
-}
-
-.alert2 {
-  background-color:#f2cc0c;
-}
-
-select {
-  width: 200px;
-}
-
-/* Series Values Section Styles */
-.series-values-container {
-  width: 300px;
-  background-color: #1F2126;
-  padding: 15px;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.series-values-container h3 {
-  color: #E0E0E0;
-  margin-top: 0;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #3A3D42;
-  padding-bottom: 8px;
-}
-
-.series-columns {
-  display: flex;
-  gap: 20px;
-}
-
-.series-column {
-  flex: 1;
-  background-color: #282A2E;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #3E4147;
-}
-
-.series-column h4 {
-  color: #D8D9DA;
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 14px;
-  border-bottom: 1px solid #3A3D42;
-  padding-bottom: 5px;
-}
-
-.series-data {
-  overflow-y: auto;
-  font-family: "Courier", "Monaco", monospace;
-  font-size: 12px;
-}
-
-.series-item {
-  display: flex;
-  padding: 2px 5px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.series-item:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.series-item .index {
-  color: #B4B7C0;
-  width: 40px;
-  flex-shrink: 0;
-}
-
-.series-item .time-column {
-  color: #B4B7C0;
-  width: 60px;
-  flex-shrink: 0;
-  margin-left: 5px;
-  font-size: 11px;
-}
-
-.series-item .value {
-  margin-left: 10px;
-  width: 4rem;
-}
-
-.bad_events {
-  color: #ed7591;
-}
-
-.good_events {
-  color: #adcbe8;
-}
-
-.good_events:disabled {
-  color: #666;
-  background-color: #1a1c1e;
-  cursor: not-allowed;
-  opacity: 0.5;
-  border-color: #2a2c2e;
-}
-
-/* Style for disabled state label */
-.good-events-label-disabled {
-  opacity: 0.5;
-  color: #666 !important;
-}
-
-.copy-button {
-  background: none;
-  border: none;
-  color: #B4B7C0;
-  cursor: pointer;
-  padding: 0px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
-}
-
-.copy-button:hover {
-  background-color: #3E4147;
-  color: #D8D9DA;
-  transform: scale(1.05);
-}
-
-.copy-button:active {
-  transform: scale(0.95);
-}
-
-.expanded-definition-mini {
-  align-items: center;
-  gap: 8px;
-  font-family: "Courier", "Monaco", monospace;
-  font-size: 11px;
-  opacity: 0.8;
-}
-
-.expanded-definition-mini code {
-  background: none;
-  border: none;
-  padding: 0;
-  color: inherit;
-  flex: 1;
-  word-break: break-all;
-}
-
-.definition-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  font-family: "Courier", "Monaco", monospace;
-  font-size: 12px;
-}
-
-/* Threshold Crossings Section Styles */
+/* Updated container styles for 50/50 split in bottom container */
 .threshold-crossings-container {
   background-color: #1F2126;
   padding: 15px;
   border-radius: 4px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  margin-top: 10px;
-  max-width: 100%;
+  flex: 1;
+  overflow: hidden;
 }
-
-.threshold-crossings-container h3 {
-  color: #E0E0E0;
-  margin-top: 0;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #3A3D42;
-  padding-bottom: 8px;
-}
-
-.crossings-data {
-  overflow-y: auto;
-  max-height: 300px;
-  font-family: "Courier", "Monaco", monospace;
-  font-size: 12px;
-}
-
-.crossing-header {
-  display: flex;
-  padding: 8px 5px;
-  border-bottom: 2px solid #3A3D42;
-  font-weight: bold;
-  background-color: #282A2E;
-  border-radius: 4px 4px 0 0;
-}
-
-.crossing-item {
-  display: flex;
-  padding: 5px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.crossing-item:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.crossing-step {
-  color: #B4B7C0;
-  width: 60px;
-  flex-shrink: 0;
-}
-
-.crossing-time {
-  color: #B4B7C0;
-  width: 80px;
-  flex-shrink: 0;
-  margin-left: 5px;
-  font-size: 11px;
-}
-
-.crossing-type {
-  width: 120px;
-  flex-shrink: 0;
-  margin-left: 10px;
-  font-weight: bold;
-}
-
-.above-threshold {
-  color: #ff6b6b;
-}
-
-.below-threshold {
-  color: #51cf66;
-}
-
-.crossing-values {
-  margin-left: 15px;
-  width: 140px;
-  flex-shrink: 0;
-  font-size: 11px;
-} 
