@@ -362,15 +362,11 @@ select {
   width: 120px;
   flex-shrink: 0;
   margin-left: 10px;
-  font-weight: bold;
 }
 
 .above-threshold {
   color: #ff6b6b;
-}
-
-.below-threshold {
-  color: #51cf66;
+  font-weight: bold;
 }
 
 .crossing-values {
