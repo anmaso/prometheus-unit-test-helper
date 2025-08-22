@@ -301,7 +301,7 @@ export const fn = {
   },
 
   // Function to detect alert threshold crossings
-  detectThresholdCrossings: (alert1Data, alert2Data, threshold1Data, threshold2Data, debounceEnabled = false, debounceTime = 0) => {
+  detectThresholdCrossings: (alert1Data, alert2Data, threshold1Data, threshold2Data, debounceTime = 0) => {
     if (!alert1Data || !alert2Data || !threshold1Data || !threshold2Data) {
       return [];
     }
@@ -319,8 +319,6 @@ export const fn = {
     for (let i = 0; i < numPoints; i++) {
       const isOverThreshold = alert1Data[i] > threshold1Data[i] && alert2Data[i] > threshold2Data[i];
 
-      if (debounceEnabled) {
-        // Handle debounced logic
         if (isOverThreshold) {
           consecutiveOverThreshold++;
           if (!effectivelyInAlert && consecutiveOverThreshold >= debounceTime) {
@@ -350,31 +348,6 @@ export const fn = {
           }
           consecutiveOverThreshold = 0;
         }
-      } else {
-        // Handle simple (non-debounced) logic
-        if (isOverThreshold && !wasOverThreshold) {
-          // Crossed above threshold
-          crossings.push({
-            step: i,
-            type: 'above_threshold',
-            alert1Value: alert1Data[i],
-            alert2Value: alert2Data[i],
-            threshold1Value: threshold1Data[i],
-            threshold2Value: threshold2Data[i]
-          });
-        } else if (!isOverThreshold && wasOverThreshold) {
-          // Crossed below threshold
-          crossings.push({
-            step: i,
-            type: 'below_threshold',
-            alert1Value: alert1Data[i],
-            alert2Value: alert2Data[i],
-            threshold1Value: threshold1Data[i],
-            threshold2Value: threshold2Data[i]
-          });
-        }
-        wasOverThreshold = isOverThreshold;
-      }
     }
 
     return crossings;

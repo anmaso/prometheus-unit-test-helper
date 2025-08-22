@@ -38,8 +38,7 @@ export const highlightPlugin = {
 
     let inHighlightSegment = false;
     let segmentStartIndex = 0;
-    const useDebounce = chart.debounceEnabled || false;
-    const debounceSteps = useDebounce ? (parseInt(chart.debounceTime, 10) || 0) : 0;
+    const debounceSteps = parseInt(chart.debounceTime, 10) || 0;
 
     let effectiveAlertStates = new Array(numPoints).fill(false);
     let consecutiveOverThreshold = 0;

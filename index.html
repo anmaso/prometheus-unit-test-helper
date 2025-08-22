@@ -17,7 +17,7 @@
         class="expanded-definition-mini"
         :class="{ 'good-events-label-disabled': goodEventsDisabled }"><code>{{good_length}} data points, {{good_total_duration}} duration</code></span><input
         class="good_events" v-model="good" :disabled="goodEventsDisabled" size="100" />
-      <div v-if="showSeriesValues" class="expanded-definition-mini">
+      <div class="expanded-definition-mini">
         <button @click="copyToClipboard(expandedGood)" class="copy-button" title="Copy good events to clipboard">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -31,7 +31,7 @@
       bad events <span class="expanded-definition-mini"><code
           class="bad_events">{{bad_length}} data points, {{bad_total_duration}} duration</code></span><input
         class="bad_events" v-model="bad" size="100" />
-      <div v-if="showSeriesValues" class="expanded-definition-mini">
+      <div class="expanded-definition-mini">
         <code class="bad_events">{{expandedBad}}</code>
         <button @click="copyToClipboard(expandedBad)" class="copy-button" title="Copy bad events to clipboard">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -62,9 +62,6 @@
       <input type="checkbox" id="highlightToggleCheckbox" v-model="highlightEnabled" />
       <label for="highlightToggleCheckbox" style="cursor: pointer;">Highlight alert</label>
       <br />
-      <input type="checkbox" id="showSeriesValuesCheckbox" v-model="showSeriesValues" />
-      <label for="showSeriesValuesCheckbox" style="cursor: pointer;">Show series values</label>
-      <br />
       <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" />
       <label for="showTimeFormatCheckbox" style="cursor: pointer;">Show time format</label>
       <br />
@@ -73,9 +70,7 @@
       <small style="margin-left: 5px; color: #B4B7C0;">Time between samples (e.g., 1m, 5m, 1h, 30s). It only affects the
         graph x labels</small>
       <br />
-      <input type="checkbox" id="debounceToggleCheckbox" v-model="debounceEnabled" />
-      <label for="debounceToggleCheckbox" style="cursor: pointer;">Debounce alert</label>
-      <label for="debounceTimeInput" style="margin-left: 10px;">window </label>
+      <label for="debounceTimeInput" style="margin-left: 10px;">Debounce alert window </label>
       <input id="debounceTimeInput" v-model="debounceTime" size="3" min="0" />
 
       <br />
@@ -189,9 +184,6 @@
                 </li>
               </ul>
             </li>
-            <li><strong>Show Series Values Checkbox:</strong> Displays the expanded series definitions and a detailed
-              table showing step-by-step values for good events, bad events, and their rates. Also shows copy buttons
-              for easy copying of expanded definitions.</li>
             <li><strong>Show Time Format Checkbox:</strong> Toggles between showing step numbers and time format (e.g.,
               "1h 30m") on the chart axis and tooltips. Time format uses the configured interval setting.</li>
             <li><strong>Interval:</strong> Specifies the time between samples. Supports seconds (s), minutes (m), hours
@@ -254,7 +246,7 @@
         <ChartComponent :alert1="chartData.alert1" :alert2="chartData.alert2" :threshold1="chartData.threshold1"
           :threshold2="chartData.threshold2" :bad="chartData.bad" :good="chartData.good" :rate_bad="chartData.rate_bad"
           :rate_good="chartData.rate_good" :labels="chartData.labels" :highlight-enabled="highlightEnabled"
-          :debounce-enabled="debounceEnabled" :debounce-time="debounceTime" :show-time-format="showTimeFormat"
+          :debounce-time="debounceTime" :show-time-format="showTimeFormat"
           :interval="interval" />
       </div>
 
@@ -296,7 +288,7 @@
       <!-- Example Description Section -->
       
       <!-- Series Values Section -->
-      <div v-if="showSeriesValues" class="series-values-container">
+      <div class="series-values-container">
         <div class="series-data">
           <div class="series-item">
             <span class="index">step</span>

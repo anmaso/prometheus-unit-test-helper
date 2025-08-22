@@ -25,9 +25,7 @@ export function createApp() {
         THRESHOLD2: 'slo_helper_threshold2_v1',
         HIGHLIGHT_ENABLED: 'slo_helper_highlight_enabled_v1',
         SELECTED_FORMULA: 'slo_helper_selected_formula_v1',
-        DEBOUNCE_ENABLED: 'slo_helper_debounce_enabled_v1', 
         DEBOUNCE_TIME: 'slo_helper_debounce_time_v1',
-        SHOW_SERIES_VALUES: 'slo_helper_show_series_values_v1',
         SHOW_TIME_FORMAT: 'slo_helper_show_time_format_v1',
         INTERVAL: 'slo_helper_interval_v1'
       };
@@ -40,9 +38,7 @@ export function createApp() {
       const initialThreshold2 = localStorage.getItem(LS_KEYS.THRESHOLD2) || 0.01344;
       const initialSelectedFormula = localStorage.getItem(LS_KEYS.SELECTED_FORMULA) || 'proportionRateOverN';
       const initialHighlightEnabled = localStorage.getItem(LS_KEYS.HIGHLIGHT_ENABLED);
-      const initialDebounceEnabled = localStorage.getItem(LS_KEYS.DEBOUNCE_ENABLED);
       const initialDebounceTime = localStorage.getItem(LS_KEYS.DEBOUNCE_TIME) || 0;
-      const initialShowSeriesValues = localStorage.getItem(LS_KEYS.SHOW_SERIES_VALUES);
       const initialShowTimeFormat = localStorage.getItem(LS_KEYS.SHOW_TIME_FORMAT);
       const initialInterval = localStorage.getItem(LS_KEYS.INTERVAL) || '1m';
       const initialTests = document.location.toString().indexOf('test=true')>0;
@@ -57,11 +53,9 @@ export function createApp() {
       let threshold1  = Vue.ref(initialThreshold1 !== '' ? parseFloat(initialThreshold1) : 0.01344);
       let threshold2  = Vue.ref(initialThreshold2 !== '' ? parseFloat(initialThreshold2) : 0.01344);
       let highlightEnabled = Vue.ref(initialHighlightEnabled !== null ? JSON.parse(initialHighlightEnabled) : true);
-      let debounceEnabled  = Vue.ref(initialDebounceEnabled !== null ? JSON.parse(initialDebounceEnabled) : true);
       let debounceTime     = Vue.ref(initialDebounceTime !== null ? parseInt(initialDebounceTime, 10) : 5);
       let selectedFormula  = Vue.ref(initialSelectedFormula);
       let showHelpModal    = Vue.ref(false);
-      let showSeriesValues = Vue.ref(initialShowSeriesValues !== null ? JSON.parse(initialShowSeriesValues) : false);
       let showTimeFormat   = Vue.ref(initialShowTimeFormat !== null ? JSON.parse(initialShowTimeFormat) : true);
       let interval         = Vue.ref(initialInterval);
       let badSeriesData    = Vue.ref([]);
@@ -161,8 +155,7 @@ export function createApp() {
           alert2, 
           th1, 
           th2, 
-          debounceEnabled.value, 
-          debounceEnabled.value ? debounceTime.value : 0
+          debounceTime.value 
         );
       };
 
@@ -195,14 +188,8 @@ export function createApp() {
       Vue.watch(threshold1, (newValue) => { localStorage.setItem(LS_KEYS.THRESHOLD1, newValue.toString()); });
       Vue.watch(threshold2, (newValue) => { localStorage.setItem(LS_KEYS.THRESHOLD2, newValue.toString()); });
       Vue.watch(selectedFormula, (newValue) => { localStorage.setItem(LS_KEYS.SELECTED_FORMULA, newValue); });
-      Vue.watch(debounceEnabled, (newValue) => { 
-        localStorage.setItem(LS_KEYS.DEBOUNCE_ENABLED, newValue); 
-      });
       Vue.watch(debounceTime, (newValue) => { 
         localStorage.setItem(LS_KEYS.DEBOUNCE_TIME, newValue); 
-      });
-      Vue.watch(showSeriesValues, (newValue) => { 
-        localStorage.setItem(LS_KEYS.SHOW_SERIES_VALUES, newValue); 
       });
       Vue.watch(showTimeFormat, (newValue) => { 
         localStorage.setItem(LS_KEYS.SHOW_TIME_FORMAT, newValue); 
@@ -294,12 +281,10 @@ export function createApp() {
         threshold1,
         threshold2,
         highlightEnabled,
-        debounceEnabled,
         debounceTime,
         selectedFormula,
         showHelpModal,
         toggleHelpModal,
-        showSeriesValues,
         showTimeFormat,
         interval,
         timeStrings, // Computed time strings for reactivity

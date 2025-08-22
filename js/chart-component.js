@@ -13,7 +13,6 @@ export const ChartComponent = {
     rate_good: { type: Array, required: true },
     labels: { type: Array, required: true },
     highlightEnabled: { type: Boolean, required: true },
-    debounceEnabled: { type: Boolean, required: true },
     debounceTime: { type: [Number, String], required: true },
     showTimeFormat: { type: Boolean, default: false },
     interval: { type: String, default: '1m' }
@@ -37,7 +36,6 @@ export const ChartComponent = {
     rate_good: 'renderChart',
     labels: 'renderChart',
     highlightEnabled: 'renderChart',
-    debounceEnabled: 'renderChart',
     debounceTime: 'renderChart',
     interval: 'renderChart',
     showTimeFormat: {
@@ -59,15 +57,6 @@ export const ChartComponent = {
       handler(newVal, oldVal) {
         if (this._chart) {
           this._chart.debounceTime = newVal;
-          this._chart.update('none');
-        }
-      },
-      immediate: true
-    },
-    debounceEnabled: {
-      handler(newVal, oldVal) {
-        if (this._chart) {
-          this._chart.debounceEnabled = newVal;
           this._chart.update('none');
         }
       },
@@ -212,7 +201,6 @@ export const ChartComponent = {
       
       try {
         this._chart = new Chart(ctx, config);
-        this._chart.debounceEnabled = this.debounceEnabled;
         this._chart.debounceTime = this.debounceTime;
       } catch (error) {
         console.error('Error creating chart:', error);
