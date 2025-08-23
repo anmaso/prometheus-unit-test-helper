@@ -414,3 +414,8 @@ select {
 .description-content p {
   margin: 0;
 }
+
+.description-content a {
+  color: #36A2EB;
+  text-decoration: none;
+}

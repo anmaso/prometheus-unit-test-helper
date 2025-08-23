@@ -1,4 +1,15 @@
 export const examples = {
+    "Google SRE workbook example": {
+        "formula":"proportionRateOverN",
+        "good": "0+100x60 #+85x9 #+100x60",
+        "bad": "0+0x60 #+15x9 #+0x60",
+        "alert1": "5",
+        "alert2": "60",
+        "threshold1": "0.0144",
+        "threshold2": "0.0144",
+        "debounce": "0",
+        "description": "Example from the <a href='https://sre.google/workbook/alerting-on-slos/#short_and_long_windows_for_alerting'>Google SRE workbook</a>.<br><br>After a 1h period of good activity, a 15% error rate is introduced fro 10minutes. The short window triggers inmediately and the longer window follows after 5min"
+    },
     "Effect of debounce": {
         "formula":"proportionRateOverN",
         "good": "0+1000x60",
@@ -8,7 +19,7 @@ export const examples = {
         "threshold1": "0.01344",
         "threshold2": "0.01344",
         "debounce": "1",
-        "description": "This is a short example of a <strong>good</strong> and <strong>bad</strong> series with two alerts and two thresholds. The alerts are triggered when the series crosses the thresholds. The <em>debounce</em> is used to prevent the alerts from being triggered too often.<br><br>Try changing the debounce value to see the effect on the alerts:<br>• <strong>2</strong> will hide one of the alerts<br>• <strong>3</strong> will hide both"
+        "description": "'Debounce' time corresponds to the Prometheus 'for' clause, that makes the alert wait for a certain amount of time before triggering. The <em>debounce</em> is used to prevent the alerts from being triggered too often and avoid 'flappy' alerts.<br><br>Try changing the debounce value to see the effect on the alerts:<br>• <strong>2</strong> will hide one of the alerts<br>• <strong>3</strong> will hide both"
     },
     "Pre-fill alert windows with good events": {
         "formula":"proportionRateOverN",
