@@ -21,7 +21,29 @@ export const examples = {
         "debounce": "1",
         "description": "'Debounce' time corresponds to the Prometheus 'for' clause, that makes the alert wait for a certain amount of time before triggering. The <em>debounce</em> is used to prevent the alerts from being triggered too often and avoid 'flappy' alerts.<br><br>Try changing the debounce value to see the effect on the alerts:<br>• <strong>2</strong> will hide one of the alerts<br>• <strong>3</strong> will hide both"
     },
-    "Pre-fill alert windows with good events": {
+    "Unrealistic scenario": {
+        "formula":"proportionRateOverN",
+        "good": "0+0x60 #+850x10 #+1000x60",
+        "bad": "0+0x60 #+150x10 #+0x60",
+        "alert1": "5",
+        "alert2": "60",
+        "threshold1": "0.01344",
+        "threshold2": "0.01344",
+        "debounce": "1",
+        "description": "This example presents an unrealistic scenario where bad events start at the same time as good events. <br/> This has the effect of triggering the alert as soon as bad events appear, making for a steep ramp in the alert graph"
+    },
+    "Realistic example": {
+        "formula":"proportionRateOverN",
+        "good": "0+1000x60 #+850x10 #+1000x60 ",
+        "bad": "0+0x60 150+150x10 #+0x60",
+        "alert1": "5",
+        "alert2": "60",
+        "threshold1": "0.01344",
+        "threshold2": "0.01344",
+        "debounce": "1",
+        "description": "This example presents a more realistic scenario where bad events occur some time after good events. This has the effect of filling the alerting windows with good events, so the alert takes some time to trigger until the effect of bad events gets computed"
+    },
+    "Realistic vs Unrealistic side to side": {
         "formula":"proportionRateOverN",
         "good": "0+1000x60 #+850x10 #+1000x60 #+0x60 #+850x10 #+1000x60",
         "bad": "0+0x60 150+150x10 #+0x60 #+0x60 #+150x10 #+0x60",
