@@ -49,30 +49,29 @@
       </select>
       <br />
       <span class="alert alert1"></span>
-      alert 1 window
-      <input v-model="short" size="5" />
+      <label for="alert1"  style="display: inline-block; width: 110px;padding-left:10px">alert 1 window</label>
+      <input name="alert1" v-model="short" size="5" />
       threshold
       <input v-model="threshold1" size="6" />
       <br />
       <span class="alert alert2"></span>
-      alert 2 window
-      <input v-model="long" size="5" />
+      <label for="alert2"  style="display: inline-block; width: 110px;padding-left:10px">alert 2 window</label>
+      <input name="alert2" v-model="long" size="5" />
       threshold <input v-model="threshold2" size="6" />
+      <br />
+      <label for="intervalInput" style="display: inline-block; width: 130px;">Interval:</label>
+      <input id="intervalInput" v-model="interval" size="5" placeholder="1m" title="Time between samples (e.g., 1m, 5m, 1h, 30s). It only affects the graph x labels" />
+      <br />
+      <label for="debounceTimeInput" style="display: inline-block; width: 130px;vertical-align:top">Debounce alert window:</label>
+      <input id="debounceTimeInput" v-model="debounceTime" size="5" min="0" />
+
+      <br />
       <br />
       <input type="checkbox" id="highlightToggleCheckbox" v-model="highlightEnabled" />
       <label for="highlightToggleCheckbox" style="cursor: pointer;">Highlight alert</label>
       <br />
       <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" />
       <label for="showTimeFormatCheckbox" style="cursor: pointer;">Show time format</label>
-      <br />
-      <label for="intervalInput" style="margin-right: 10px;">Interval:</label>
-      <input id="intervalInput" v-model="interval" size="5" placeholder="1m" />
-      <small style="margin-left: 5px; color: #B4B7C0;">Time between samples (e.g., 1m, 5m, 1h, 30s). It only affects the
-        graph x labels</small>
-      <br />
-      <label for="debounceTimeInput" style="margin-left: 10px;">Debounce alert window </label>
-      <input id="debounceTimeInput" v-model="debounceTime" size="3" min="0" />
-
       <br />
       <br />
       Load an example:
