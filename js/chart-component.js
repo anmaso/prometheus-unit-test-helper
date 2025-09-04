@@ -15,6 +15,7 @@ export const ChartComponent = {
     highlightEnabled: { type: Boolean, required: true },
     debounceTime: { type: [Number, String], required: true },
     showTimeFormat: { type: Boolean, default: false },
+    logarithmicScale: { type: Boolean, default: false },
     interval: { type: String, default: '1m' }
   },
   template: `<canvas ref="chartCanvas"></canvas>`,
@@ -37,6 +38,7 @@ export const ChartComponent = {
     labels: 'renderChart',
     highlightEnabled: 'renderChart',
     debounceTime: 'renderChart',
+    logarithmicScale: 'renderChart',
     interval: 'renderChart',
     showTimeFormat: {
       handler(newVal, oldVal) {
@@ -69,6 +71,78 @@ export const ChartComponent = {
     }
   },
   methods: {
+    getLogMinValue() {
+      // Collect all positive values from all data series
+      const allValues = [];
+      
+      // Add values from all data series
+      [this.alert1, this.alert2, this.threshold1, this.threshold2, this.bad, this.good, this.rate_bad, this.rate_good].forEach(series => {
+        if (Array.isArray(series)) {
+          series.forEach(value => {
+            if (typeof value === 'number' && value > 0) {
+              allValues.push(value);
+            }
+          });
+        }
+      });
+      
+      if (allValues.length === 0) {
+        // Fallback if no positive values found
+        return 0.001;
+      }
+      
+      // Find the minimum positive value
+      const minPositive = Math.min(...allValues);
+      
+      // Return a value that's 10x smaller than the minimum, but not smaller than 0.00001
+      // This ensures good visual spacing on the log scale
+      return Math.max(minPositive / 10, 0.00001);
+    },
+    processDataForLogScale(data) {
+      // If not using logarithmic scale, return data as-is
+      if (!this.logarithmicScale) {
+        return data;
+      }
+      
+      // Get the minimum value for the y-axis
+      const minValue = this.getLogMinValue();
+      
+      // Replace zeros and negative values with the minimum value
+      return data.map(value => {
+        if (typeof value === 'number' && value <= 0) {
+          return minValue;
+        }
+        return value;
+      });
+    },
+    getTooltipLabelCallback() {
+      return (context) => {
+        const datasetLabel = context.dataset.label;
+        const value = context.parsed.y;
+        const dataIndex = context.dataIndex;
+        
+        // Get original value to check if it was zero
+        let originalValue;
+        switch(datasetLabel) {
+          case 'alert1': originalValue = this.alert1[dataIndex]; break;
+          case 'alert2': originalValue = this.alert2[dataIndex]; break;
+          case 'threshold1': originalValue = this.threshold1[dataIndex]; break;
+          case 'threshold2': originalValue = this.threshold2[dataIndex]; break;
+          case 'bad': originalValue = this.bad[dataIndex]; break;
+          case 'good': originalValue = this.good[dataIndex]; break;
+          case 'bad rate': originalValue = this.rate_bad[dataIndex]; break;
+          case 'good rate': originalValue = this.rate_good[dataIndex]; break;
+          default: originalValue = value;
+        }
+        
+        // Check if this was originally zero/negative and we're in log scale
+        if (this.logarithmicScale && originalValue <= 0) {
+          return `${datasetLabel}: 0 (displayed as ${value.toFixed(6)} for log scale)`;
+        }
+        
+        return `${datasetLabel}: ${value}`;
+      };
+    },
     handleResize() {
       // Debounce resize events
       clearTimeout(this._resizeTimeout);
@@ -121,14 +195,14 @@ export const ChartComponent = {
         data: {
           labels: this.labels,
           datasets: [
-            {label:'alert1', data:this.alert1, backgroundColor:'#73bf79', borderColor:'#73bf79'},
-            {label:'alert2', data:this.alert2, backgroundColor:'#f2cc0c', borderColor:'#f2cc0c'},
-            {label:'threshold1', data:this.threshold1, backgroundColor:'#6495ed', borderColor:'#6495ed', pointRadius:0, borderDash:[10, 10]},
-            {label:'threshold2', data:this.threshold2, backgroundColor:'#ed6495', borderColor:'#ed6495', pointRadius:0, borderDash:[10, 10]},
-            {label:'bad', data:this.bad, backgroundColor:'#ffaaaa', borderColor:'#ffaaaa', hidden:true},
-            {label:'good', data:this.good, backgroundColor:'#aaaaff', borderColor:'#aaaaff', hidden:true},
-            {label:'bad rate', data:this.rate_bad, backgroundColor:'#ff4500', borderColor:'#ff4500', hidden:true},
-            {label:'good rate', data:this.rate_good, backgroundColor:'#007fff', borderColor:'#007fff', hidden:true},
+            {label:'alert1', data:this.processDataForLogScale(this.alert1), backgroundColor:'#73bf79', borderColor:'#73bf79'},
+            {label:'alert2', data:this.processDataForLogScale(this.alert2), backgroundColor:'#f2cc0c', borderColor:'#f2cc0c'},
+            {label:'threshold1', data:this.processDataForLogScale(this.threshold1), backgroundColor:'#6495ed', borderColor:'#6495ed', pointRadius:0, borderDash:[10, 10]},
+            {label:'threshold2', data:this.processDataForLogScale(this.threshold2), backgroundColor:'#ed6495', borderColor:'#ed6495', pointRadius:0, borderDash:[10, 10]},
+            {label:'bad', data:this.processDataForLogScale(this.bad), backgroundColor:'#ffaaaa', borderColor:'#ffaaaa', hidden:true},
+            {label:'good', data:this.processDataForLogScale(this.good), backgroundColor:'#aaaaff', borderColor:'#aaaaff', hidden:true},
+            {label:'bad rate', data:this.processDataForLogScale(this.rate_bad), backgroundColor:'#ff4500', borderColor:'#ff4500', hidden:true},
+            {label:'good rate', data:this.processDataForLogScale(this.rate_good), backgroundColor:'#007fff', borderColor:'#007fff', hidden:true},
           ]
         },
         plugins: [window.highlightPlugin],
@@ -165,7 +239,8 @@ export const ChartComponent = {
                     `Time: ${fn.stepToTimeString(dataIndex, this.interval)} (${dataIndex})` :
                     `Step: ${dataIndex}`;
                   return timeString;
-                }
+                },
+                label: this.getTooltipLabelCallback()
               }
             }
           },
@@ -186,9 +261,10 @@ export const ChartComponent = {
               grid: { color: '#3A3D42' },
             },
             y: {
+              type: this.logarithmicScale ? 'logarithmic' : 'linear',
               display: true,
               title: { display: false, text: 'Value', color: '#D8D9DA' },
-              suggestedMin: 0,
+              suggestedMin: this.logarithmicScale ? this.getLogMinValue() : 0,
               ticks: { color: '#B4B7C0' },
               grid: { color: '#3A3D42' }
             },
@@ -220,13 +296,15 @@ export const ChartComponent = {
           return tickValue;
         };
         
-        // Update the tooltip callback
+        // Update the tooltip callbacks
         this._chart.options.plugins.tooltip.callbacks.title = (context) => {
           const dataIndex = context[0].dataIndex;
           return this.showTimeFormatValue ? 
             `Time: ${fn.stepToTimeString(dataIndex, this.interval)} (${dataIndex})` :
             `Step: ${dataIndex}`;
         };
+        
+        this._chart.options.plugins.tooltip.callbacks.label = this.getTooltipLabelCallback();
         
         // Force chart update
         this._chart.update('none');

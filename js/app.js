@@ -27,7 +27,8 @@ export function createApp() {
         SELECTED_FORMULA: 'slo_helper_selected_formula_v1',
         DEBOUNCE_TIME: 'slo_helper_debounce_time_v1',
         SHOW_TIME_FORMAT: 'slo_helper_show_time_format_v1',
-        INTERVAL: 'slo_helper_interval_v1'
+        INTERVAL: 'slo_helper_interval_v1',
+        LOGARITHMIC_SCALE: 'slo_helper_logarithmic_scale_v1'
       };
 
       const initialGood = localStorage.getItem(LS_KEYS.GOOD) || "0+1000x60 #+850x10 #+1000x60 #+0x60 #+850x10 #+1000x60";
@@ -41,6 +42,7 @@ export function createApp() {
       const initialDebounceTime = localStorage.getItem(LS_KEYS.DEBOUNCE_TIME) || 0;
       const initialShowTimeFormat = localStorage.getItem(LS_KEYS.SHOW_TIME_FORMAT);
       const initialInterval = localStorage.getItem(LS_KEYS.INTERVAL) || '1m';
+      const initialLogarithmicScale = localStorage.getItem(LS_KEYS.LOGARITHMIC_SCALE);
       const initialTests = document.location.toString().indexOf('test=true')>0;
 
       let bad         = Vue.ref(initialBad);
@@ -57,6 +59,7 @@ export function createApp() {
       let selectedFormula  = Vue.ref(initialSelectedFormula);
       let showHelpModal    = Vue.ref(false);
       let showTimeFormat   = Vue.ref(initialShowTimeFormat !== null ? JSON.parse(initialShowTimeFormat) : true);
+      let logarithmicScale = Vue.ref(initialLogarithmicScale !== null ? JSON.parse(initialLogarithmicScale) : false);
       let interval         = Vue.ref(initialInterval);
       let badSeriesData    = Vue.ref([]);
       let goodSeriesData   = Vue.ref([]);
@@ -194,6 +197,9 @@ export function createApp() {
       Vue.watch(showTimeFormat, (newValue) => { 
         localStorage.setItem(LS_KEYS.SHOW_TIME_FORMAT, newValue); 
       });
+      Vue.watch(logarithmicScale, (newValue) => { 
+        localStorage.setItem(LS_KEYS.LOGARITHMIC_SCALE, newValue); 
+      });
       Vue.watch(interval, (newValue) => { 
         localStorage.setItem(LS_KEYS.INTERVAL, newValue); 
       });
@@ -286,6 +292,7 @@ export function createApp() {
         showHelpModal,
         toggleHelpModal,
         showTimeFormat,
+        logarithmicScale,
         interval,
         timeStrings, // Computed time strings for reactivity
         expandedBad,

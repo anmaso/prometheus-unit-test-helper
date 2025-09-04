@@ -43,8 +43,8 @@
       </div>
       <br />
       <label for="example"  style="display: inline-block; width: 130px;">Example </label>
-      <select v-model="selectedExample">
-        <option id="example" v-for="(example, name) in examples" :key="name" :value="name">{{name}}</option>
+      <select id="example" v-model="selectedExample">
+        <option v-for="(example, name) in examples" :key="name" :value="name">{{name}}</option>
       </select>
       <br />
       <label for="formula"  style="display: inline-block; width: 130px;">Alert formula</label>
@@ -77,6 +77,9 @@
       <br />
       <input type="checkbox" id="showTimeFormatCheckbox" v-model="showTimeFormat" />
       <label for="showTimeFormatCheckbox" style="cursor: pointer;">Show time format</label>
+      <br />
+      <input type="checkbox" id="logarithmicScaleCheckbox" v-model="logarithmicScale" />
+      <label for="logarithmicScaleCheckbox" style="cursor: pointer;">Logarithmic</label>
       <br />
       <br />
       <br />
@@ -246,7 +249,7 @@
         <ChartComponent :alert1="chartData.alert1" :alert2="chartData.alert2" :threshold1="chartData.threshold1"
           :threshold2="chartData.threshold2" :bad="chartData.bad" :good="chartData.good" :rate_bad="chartData.rate_bad"
           :rate_good="chartData.rate_good" :labels="chartData.labels" :highlight-enabled="highlightEnabled"
-          :debounce-time="debounceTime" :show-time-format="showTimeFormat"
+          :debounce-time="debounceTime" :show-time-format="showTimeFormat" :logarithmic-scale="logarithmicScale"
           :interval="interval" />
       </div>
 
