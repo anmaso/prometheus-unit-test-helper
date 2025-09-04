@@ -166,6 +166,14 @@ export const ChartComponent = {
         return;
       }
       
+      // Store current dataset visibility state before destroying chart
+      let datasetVisibilityState = null;
+      if (this._chart && this._chart.data && this._chart.data.datasets) {
+        datasetVisibilityState = this._chart.data.datasets.map((dataset, index) => {
+          return this._chart.isDatasetVisible(index);
+        });
+      }
+      
       if (this._chart) {
         this._chart.destroy();
       }
@@ -284,6 +292,20 @@ export const ChartComponent = {
       try {
         this._chart = new Chart(ctx, config);
         this._chart.debounceTime = this.debounceTime;
+        
+        // Restore dataset visibility state if it was previously stored
+        if (datasetVisibilityState && this._chart.data.datasets) {
+          datasetVisibilityState.forEach((isVisible, index) => {
+            if (index < this._chart.data.datasets.length) {
+              // Only update if the visibility state is different from current state
+              if (this._chart.isDatasetVisible(index) !== isVisible) {
+                this._chart.setDatasetVisibility(index, isVisible);
+              }
+            }
+          });
+          // Update the chart to reflect visibility changes
+          this._chart.update('none');
+        }
       } catch (error) {
         console.error('Error creating chart:', error);
       }
